@@ -36,7 +36,7 @@ def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, expe
             test_acc.append(acc)
             if acc == max(test_acc):
                 print('-----------------saving model-----------------')
-                torch.save(model,f'./{experiment_name}_model.pkl')
+                torch.save(model, f'./models/{experiment_name}_model.pkl')
 
 def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -67,7 +67,7 @@ def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, 
             test_acc.append(acc)
             if acc == max(test_acc):
                 print('-----------------saving model-----------------')
-                torch.save(model, f'./{experiment_name}_model.pkl')
+                torch.save(model, f'./models/{experiment_name}_model.pkl')
 
 def calc_acc(loader, model):
     n_correct = 0
