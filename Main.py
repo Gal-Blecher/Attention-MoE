@@ -16,6 +16,8 @@ def main(n_epochs,
         experiment_name,
         load_model
         ):
+    with open('configuration.yaml', 'r') as f:
+        config = yaml.load(f, Loader=SafeLoader)
     train_loader, test_loader = data_loading.prepare_data(batch_size=config['dataset'][dataset_name]['batch_size'],
                                                           dataset_name=dataset_name)
     experts = Experts.create_experts(n_experts,
@@ -55,11 +57,12 @@ if __name__ == '__main__':
     data, model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=100,
            experts_coeff=0.00001,
-           dataset_name='cub200',
-           n_experts=1,
-           expert_type='resnet50',
+           dataset_name='mnist',
+           n_experts=2,
+           expert_type='naive_fc',
            experiment_name='test_naive',
            load_model=None
            )
+    
 
-# venv/bin/activate
+

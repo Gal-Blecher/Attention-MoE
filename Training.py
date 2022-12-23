@@ -12,7 +12,7 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
     for epoch in range(n_epochs):
         model.train()
         torch.cuda.empty_cache()
@@ -45,7 +45,8 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
     data = {'train': train_loader, 'test': test_loader}
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
     for epoch in range(n_epochs):
         model.train()
         torch.cuda.empty_cache()
@@ -62,9 +63,12 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
             loss.backward()
             optimizer.step()
             if i % 100 == 0:
-                print(f'epoch: {epoch}, batch: {i}, loss: {round(running_loss/1000, 4)}')
+                lr = optimizer.defaults['lr'], scheduler.get_last_lr()
+                print(f'epoch: {epoch}, batch: {i}, loss: {round(running_loss/(100*train_loader.batch_size), 6)}'
+                      f', lr: {lr}')
                 running_loss = 0
         Metrics.metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name)
+        scheduler.step()
     return data, model, train_loss, train_acc, test_loss, test_acc
 
 
