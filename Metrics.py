@@ -68,7 +68,7 @@ def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, 
             if acc == max(test_acc):
                 print('-----------------saving model-----------------')
                 torch.save(model, f'./models/{experiment_name}_model.pkl')
-                with open(f'{experiment_name}.txt', 'w') as f:
+                with open(f'./models/{experiment_name}.txt', 'w') as f:
                     f.write(f'n_experts: {model.n_experts} \n experts_coeff: {experts_coeff} \n accuracy: {acc}')
 def calc_acc(loader, model):
     n_correct = 0
