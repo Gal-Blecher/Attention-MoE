@@ -33,6 +33,8 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
                 running_loss = 0
         Metrics.metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name)
         scheduler.step()
+        if early_stop(test_acc):
+            return data, model, train_loss, train_acc, test_loss, test_acc
     return data, model, train_loss, train_acc, test_loss, test_acc
 
 def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, experts_coeff):
@@ -69,19 +71,77 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
                 running_loss = 0
         Metrics.metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name)
         scheduler.step()
+        if early_stop(test_acc):
+            return data, model, train_loss, train_acc, test_loss, test_acc
     return data, model, train_loss, train_acc, test_loss, test_acc
 
 
 def experts_loss(labels, att_weights, model):
     labels = labels.to(device)
     criterion = nn.CrossEntropyLoss(reduction='none')
-    experts_loss_ = torch.stack(
-        (
-        criterion(model.expert1.out, labels),
-        criterion(model.expert1.out, labels)
-        )
-        , dim=1)
+    if model.n_experts == 2:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 4:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 8:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels),
+            criterion(model.expert5.out, labels),
+            criterion(model.expert6.out, labels),
+            criterion(model.expert7.out, labels),
+            criterion(model.expert8.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 16:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels),
+            criterion(model.expert5.out, labels),
+            criterion(model.expert6.out, labels),
+            criterion(model.expert7.out, labels),
+            criterion(model.expert8.out, labels),
+            criterion(model.expert9.out, labels),
+            criterion(model.expert10.out, labels),
+            criterion(model.expert11.out, labels),
+            criterion(model.expert12.out, labels),
+            criterion(model.expert13.out, labels),
+            criterion(model.expert14.out, labels),
+            criterion(model.expert15.out, labels),
+            criterion(model.expert16.out, labels)
+            )
+            , dim=1)
+            
     att_weights_flattened = torch.flatten(att_weights)
     experts_loss_flattend = torch.flatten(experts_loss_)
     weighted_experts_loss = torch.dot(att_weights_flattened, experts_loss_flattend)
     return weighted_experts_loss / labels.shape[0]
+
+def early_stop(acc_test_list):
+    curr_epoch = len(acc_test_list)
+    best_epoch = acc_test_list.index(max(acc_test_list))
+    if curr_epoch - best_epoch > 50:
+        return True
+    else:
+        return False

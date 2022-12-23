@@ -58,7 +58,7 @@ if __name__ == '__main__':
         main(n_epochs=100,
            experts_coeff=0.00001,
            dataset_name='mnist',
-           n_experts=2,
+           n_experts=1,
            expert_type='naive_fc',
            experiment_name='test_naive',
            load_model=None
