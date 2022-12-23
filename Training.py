@@ -69,7 +69,7 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
                 print(f'epoch: {epoch}, batch: {i}, loss: {round(running_loss/(100*train_loader.batch_size), 6)}'
                       f', lr: {lr}')
                 running_loss = 0
-        Metrics.metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name)
+        Metrics.metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name, experts_coeff)
         scheduler.step()
         if early_stop(test_acc):
             return data, model, train_loss, train_acc, test_loss, test_acc
@@ -132,7 +132,7 @@ def experts_loss(labels, att_weights, model):
             criterion(model.expert16.out, labels)
             )
             , dim=1)
-            
+
     att_weights_flattened = torch.flatten(att_weights)
     experts_loss_flattend = torch.flatten(experts_loss_)
     weighted_experts_loss = torch.dot(att_weights_flattened, experts_loss_flattend)

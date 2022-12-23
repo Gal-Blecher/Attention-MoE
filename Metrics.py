@@ -38,7 +38,7 @@ def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, expe
                 print('-----------------saving model-----------------')
                 torch.save(model, f'./models/{experiment_name}_model.pkl')
 
-def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name):
+def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name, experts_coeff):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
     torch.cuda.empty_cache()
@@ -68,7 +68,8 @@ def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, 
             if acc == max(test_acc):
                 print('-----------------saving model-----------------')
                 torch.save(model, f'./models/{experiment_name}_model.pkl')
-
+                with open(f'{experiment_name}.txt', 'w') as f:
+                    f.write(f'n_experts: {model.n_experts} \n experts_coeff: {experts_coeff} \n accuracy: {acc}')
 def calc_acc(loader, model):
     n_correct = 0
     n_tot = 0
