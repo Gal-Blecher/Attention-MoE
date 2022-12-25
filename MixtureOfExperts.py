@@ -55,7 +55,7 @@ class MoE(nn.Module):
             z_6, out_6 = self.expert6(x)
             z_7, out_7 = self.expert7(x)
             z_8, out_8 = self.expert8(x)
-            z_9, out_9 = self.expert9(x) # out is logits. logits is probabilities
+            z_9, out_9 = self.expert9(x)
             z_10, out_10 = self.expert10(x)
             z_11, out_11 = self.expert11(x)
             z_12, out_12 = self.expert12(x)
