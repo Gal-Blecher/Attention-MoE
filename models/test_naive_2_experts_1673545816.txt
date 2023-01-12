@@ -1,0 +1,3 @@
+n_experts: 2 
+ experts_coeff: 2.835800676940558e-09 
+ accuracy: 88.89
