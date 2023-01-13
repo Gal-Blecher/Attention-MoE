@@ -57,10 +57,10 @@ if __name__ == '__main__':
     data, model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=100,
            experts_coeff=0.00001,
-           dataset_name='mnist',
+           dataset_name='cub200',
            n_experts=1,
-           expert_type='naive_fc',
-           experiment_name='test_naive',
+           expert_type='resnet50',
+           experiment_name='cub200_test',
            load_model=None
            )
     
