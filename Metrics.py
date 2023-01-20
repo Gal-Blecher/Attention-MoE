@@ -3,6 +3,7 @@ import Training
 
 def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = 'cpu'
     model.eval()
     torch.cuda.empty_cache()
     criterion = nn.CrossEntropyLoss()
@@ -16,12 +17,17 @@ def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, expe
             images = images.to(device)
             labels = labels.to(device)
             z, out = model(images)
-            loss = criterion(out, labels)
+            loss = criterion(out, labels).detach()
             running_loss += loss
             logits = F.softmax(out, dim=0)
             _, predicted = torch.max(logits, 1)
             n_correct += (predicted == labels).sum().item()
             n_tot += labels.shape[0]
+            # print('out: ', out)
+            # print('logits: ', logits)
+            # print('predictions: ', predicted)
+            # print('labels: ', labels)
+            # break
 
         loss = running_loss / n_tot
         acc = 100.0 * n_correct / n_tot
@@ -37,9 +43,12 @@ def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, expe
             if acc == max(test_acc):
                 print('-----------------saving model-----------------')
                 torch.save(model, f'./models/{experiment_name}_model.pkl')
+                with open(f'./models/{experiment_name}.txt', 'w') as f:
+                    f.write(f'n_experts: 1, accuracy: {acc}')
 
 def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name, experts_coeff):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = 'cpu'
     model.eval()
     torch.cuda.empty_cache()
     for key in data.keys():

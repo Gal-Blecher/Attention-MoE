@@ -105,8 +105,8 @@ def plot_data_latent(model, data, plot_boundary=None, show=True):
     z_points = z_points.detach().numpy()
     z_labels = z_labels.detach().numpy()
 
-    if z_points.shape[1] > 2:
-        z_points = TSNE(n_components=2, learning_rate='auto', init='random', random_state=11).fit_transform(z_points)
+    # if z_points.shape[1] > 2:
+    #     z_points = TSNE(n_components=2, learning_rate='auto', init='random', random_state=11).fit_transform(z_points)
 
     points_df = pd.DataFrame({'x': z_points[:, 0],
                               'y': z_points[:, 1],

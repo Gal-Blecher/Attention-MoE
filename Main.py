@@ -8,6 +8,10 @@ import Experts
 from yaml.loader import SafeLoader
 import yaml
 
+def save_vectors(experiment_name, train_acc, test_acc):
+    torch.save(train_acc, f'./plots_data/train_acc{experiment_name}.pkl')
+    torch.save(test_acc, f'./plots_data/test_acc{experiment_name}.pkl')
+
 def main(n_epochs,
         experts_coeff,
         dataset_name,
@@ -35,7 +39,8 @@ def main(n_epochs,
         else:
             data, model, train_loss, train_acc, test_loss, test_acc= \
             Training.full_model_train(train_loader, test_loader, model, n_epochs, experiment_name)
-
+            save_vectors(experiment_name, train_acc, test_acc)
+            return data, model, train_loss, train_acc, test_loss, test_acc
     else:
         router = Attention.AdditiveAttention(input_dim=experts[0].z_dim)
         model = MixtureOfExperts.MoE(experts, router)
@@ -48,7 +53,7 @@ def main(n_epochs,
     # test2 = model(instance)
     data, model, train_loss, train_acc, test_loss, test_acc =\
         Training.moe_train(train_loader, test_loader, model, n_epochs, experiment_name, experts_coeff)
-
+    save_vectors(experiment_name, train_acc, test_acc)
     return data, model, train_loss, train_acc, test_loss, test_acc
 
 if __name__ == '__main__':
@@ -57,10 +62,10 @@ if __name__ == '__main__':
     data, model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=100,
            experts_coeff=0.00001,
-           dataset_name='cub200',
+           dataset_name='cifar10',
            n_experts=1,
-           expert_type='resnet50',
-           experiment_name='cub200_test',
+           expert_type='resnet18',
+           experiment_name='x',
            load_model=None
            )
     

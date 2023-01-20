@@ -6,7 +6,7 @@ class Resnet18(nn.Module):
     def __init__(self, seed, n_classes):
         super(Resnet18, self).__init__()
         torch.manual_seed(seed=seed)
-        resnet18 = models.resnet18(weights='ResNet18_Weights.DEFAULT')
+        resnet18 = models.resnet18(pretrained=True)
         resnet18.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         modules = list(resnet18.children())[:-1]
         self.model = nn.Sequential(*modules)
@@ -23,7 +23,7 @@ class Resnet50(nn.Module):
     def __init__(self, seed, n_classes):
         super(Resnet50, self).__init__()
         torch.manual_seed(seed=seed)
-        resnet50 = models.resnet50(weights='ResNet50_Weights.DEFAULT')
+        resnet50 = models.resnet50(pretrained=True)
         modules = list(resnet50.children())[:-1]
         self.model = nn.Sequential(*modules)
         self.clf = nn.Linear(2048, n_classes)
