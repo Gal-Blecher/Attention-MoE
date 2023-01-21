@@ -47,7 +47,7 @@ def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, expe
                     f.write(f'n_experts: 1, accuracy: {acc}')
 
 def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name, experts_coeff):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # test
     # device = 'cpu'
     model.eval()
     torch.cuda.empty_cache()
