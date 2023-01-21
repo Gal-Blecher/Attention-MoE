@@ -3,7 +3,7 @@ import Training
 
 def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = 'cpu'
+    # device = 'cpu'
     model.eval()
     torch.cuda.empty_cache()
     criterion = nn.CrossEntropyLoss()
@@ -48,7 +48,7 @@ def metrics(model, data, epoch, train_loss, train_acc, test_loss, test_acc, expe
 
 def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name, experts_coeff):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = 'cpu'
+    # device = 'cpu'
     model.eval()
     torch.cuda.empty_cache()
     for key in data.keys():
