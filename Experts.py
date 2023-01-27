@@ -24,6 +24,7 @@ class Resnet50(nn.Module):
         super(Resnet50, self).__init__()
         torch.manual_seed(seed=seed)
         resnet50 = models.resnet50(pretrained=True)
+        resnet50.avgpool = nn.AdaptiveAvgPool2d((1,1))
         modules = list(resnet50.children())[:-1]
         self.model = nn.Sequential(*modules)
         self.clf = nn.Linear(2048, n_classes)

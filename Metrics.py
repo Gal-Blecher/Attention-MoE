@@ -52,6 +52,8 @@ def metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, 
     model.eval()
     torch.cuda.empty_cache()
     for key in data.keys():
+        if key == 'train':
+            continue
         running_loss = 0
         n_correct = 0
         n_tot = 0

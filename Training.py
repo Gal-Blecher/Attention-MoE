@@ -1,5 +1,8 @@
 from imports import *
 import Metrics
+import torch.optim as optim
+import yaml
+from yaml.loader import SafeLoader
 
 def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -13,6 +16,9 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=0.1,
+                          momentum=0.9, weight_decay=1e-4)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
     for epoch in range(n_epochs):
         model.train()
         torch.cuda.empty_cache()
@@ -38,6 +44,9 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
     return data, model, train_loss, train_acc, test_loss, test_acc
 
 def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, experts_coeff):
+    with open(f'./models/{experiment_name}_configuration.yaml', 'r') as f:
+        config = yaml.load(f, Loader=SafeLoader)
+    print(config['training'])
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'training with device: {device}')
     train_loss = []
@@ -47,8 +56,9 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
     data = {'train': train_loader, 'test': test_loader}
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=config['training']['lr'],
+                          momentum=0.9, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(config['training']['step_size']*10), gamma=0.1)
     for epoch in range(n_epochs):
         model.train()
         torch.cuda.empty_cache()

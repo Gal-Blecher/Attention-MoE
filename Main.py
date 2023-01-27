@@ -57,14 +57,15 @@ def main(n_epochs,
     return data, model, train_loss, train_acc, test_loss, test_acc
 
 if __name__ == '__main__':
+    torch.manual_seed(42)
     with open('configuration.yaml', 'r') as f:
         config = yaml.load(f, Loader=SafeLoader)
     data, model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=100,
            experts_coeff=0.00001,
-           dataset_name='cifar10',
+           dataset_name='cub200',
            n_experts=1,
-           expert_type='resnet18',
+           expert_type='resnet50',
            experiment_name='x',
            load_model=None
            )
