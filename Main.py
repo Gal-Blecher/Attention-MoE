@@ -7,6 +7,7 @@ import plots
 import Experts
 from yaml.loader import SafeLoader
 import yaml
+import nets
 
 def save_vectors(experiment_name, train_acc, test_acc):
     torch.save(train_acc, f'./plots_data/train_acc{experiment_name}.pkl')
@@ -63,9 +64,9 @@ if __name__ == '__main__':
     data, model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=100,
            experts_coeff=0.00001,
-           dataset_name='cub200',
+           dataset_name='cifar10',
            n_experts=1,
-           expert_type='resnet50',
+           expert_type='resnet20',
            experiment_name='x',
            load_model=None
            )

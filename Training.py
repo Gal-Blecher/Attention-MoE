@@ -4,6 +4,7 @@ import torch.optim as optim
 import yaml
 from yaml.loader import SafeLoader
 
+
 def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'training with device: {device}')
