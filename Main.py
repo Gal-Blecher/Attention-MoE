@@ -8,6 +8,7 @@ import Experts
 from yaml.loader import SafeLoader
 import yaml
 import nets
+import Metrics
 
 def save_vectors(experiment_name, train_acc, test_acc):
     torch.save(train_acc, f'./plots_data/train_acc{experiment_name}.pkl')
@@ -35,7 +36,12 @@ def main(n_epochs,
     if n_experts==1:
         model = experts[0]
         if load_model is not None:
-            model = torch.load(load_model)
+            model = torch.load(load_model, map_location=torch.device('cpu'))
+            model_state_dict = model['state_dict']
+            new_model = Experts.Resnet20(1, Experts.BasicBlock, [3, 3, 3], n_classes=10)
+            new_model.load_state_dict(model_state_dict)
+            acc_l = Metrics.calc_acc(test_loader, model)
+            print(f'Loaded model accuracy is: {acc_l}')
             plots.plot_data_latent(model, test_loader, plot_boundary=None, show=True)
         else:
             data, model, train_loss, train_acc, test_loss, test_acc= \
@@ -68,7 +74,7 @@ if __name__ == '__main__':
            n_experts=1,
            expert_type='resnet20',
            experiment_name='x',
-           load_model=None
+           load_model='/Users/galblecher/Desktop/Thesis/resnet20-12fca82f.th'
            )
     
 
