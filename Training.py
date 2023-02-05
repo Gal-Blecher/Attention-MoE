@@ -32,7 +32,7 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
         for batch_idx, (inputs, targets) in enumerate(train_loader):
             inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
-            outputs = model(inputs)
+            _, outputs = model(inputs)
             loss = criterion(outputs, targets)
             loss.backward()
             optimizer.step()
@@ -41,11 +41,16 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-        print(f'epoch: {epoch}, train accuracy: {round((correct/total)*100, 2)}')
-        test_acc, test_loss = test(test_loader, model)
-        print(f'epoch: {epoch}, test accuracy: {round(test_acc*100, 2)}')
-
+        acc_train = round((correct/total)*100, 2)
+        print(f'epoch: {epoch}, train accuracy: {acc_train}')
+        acc_test, test_loss = test(test_loader, model)
+        train_acc.append(acc_train)
+        test_acc.append(acc_test)
+        print(f'epoch: {epoch}, test accuracy: {round(acc_test*100, 2)}')
         scheduler.step()
+        if acc_test == max(test_acc):
+            print('-----------------saving model-----------------')
+            torch.save(model, f'./models/{experiment_name}_model.pkl')
     return model, train_loss, train_acc, test_loss, test_acc
 
 def test(test_loader, model):
@@ -57,7 +62,7 @@ def test(test_loader, model):
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(test_loader):
             inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
+            _, outputs = model(inputs)
             loss = criterion(outputs, targets)
             test_loss += loss.item()
             _, predicted = outputs.max(1)

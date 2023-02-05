@@ -94,3 +94,4 @@ def calc_acc(loader, model):
         n_tot += labels.shape[0]
     acc = 100.0 * n_correct / n_tot
     print(acc)
+    return acc

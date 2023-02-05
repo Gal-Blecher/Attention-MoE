@@ -65,9 +65,6 @@ def create_experts(n_experts, expert_type, n_classes, input_dim):
     if expert_type=='resnet50':
         for e in range(n_experts):
             experts.append(Resnet50(e, n_classes=n_classes))
-    if expert_type=='resnet20':
-        for e in range(n_experts):
-            experts.append(resnet20())
     if expert_type=='naive_fc':
         for e in range(n_experts):
             experts.append(Naive_fc(e, input_dim=input_dim,n_classes=n_classes, latent_dim=2))
@@ -181,9 +178,10 @@ class ResNet(nn.Module):
         out = self.layer3(out)
         out = self.layer4(out)
         out = F.avg_pool2d(out, 4)
-        out = out.view(out.size(0), -1)
-        out = self.linear(out)
-        return out
+        z = out.view(out.size(0), -1)
+        out = self.linear(z)
+        self.out = out
+        return z, out
 
 
 def ResNet18():

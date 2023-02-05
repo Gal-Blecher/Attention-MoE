@@ -36,16 +36,14 @@ def main(n_epochs,
     if n_experts==1:
         model = Experts.ResNet18()
         if load_model is not None:
-            new_model = Experts.ResNet18()
             model = torch.load(load_model, map_location=torch.device('cpu'))
             acc_l = Metrics.calc_acc(test_loader, model)
             print(f'Loaded model accuracy is: {acc_l}')
-            plots.plot_data_latent(model, test_loader, plot_boundary=None, show=True)
         else:
             model, train_loss, train_acc, test_loss, test_acc= \
             Training.full_model_train(train_loader, test_loader, model, n_epochs, experiment_name)
             save_vectors(experiment_name, train_acc, test_acc)
-            return data, model, train_loss, train_acc, test_loss, test_acc
+            return model, train_loss, train_acc, test_loss, test_acc
     else:
         router = Attention.AdditiveAttention(input_dim=experts[0].z_dim)
         model = MixtureOfExperts.MoE(experts, router)
