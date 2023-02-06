@@ -45,7 +45,7 @@ def main(n_epochs,
             save_vectors(experiment_name, train_acc, test_acc)
             return model, train_loss, train_acc, test_loss, test_acc
     else:
-        router = Attention.AdditiveAttention(input_dim=experts[0].z_dim)
+        router = Attention.AdditiveAttention(input_dim=config['nets'][expert_type]['emb_dim'])
         model = MixtureOfExperts.MoE(experts, router)
         print(model)
 
@@ -54,22 +54,22 @@ def main(n_epochs,
         plots.plot_summary(model, model.expert1, test_loader, 1)
         return
     # test2 = model(instance)
-    data, model, train_loss, train_acc, test_loss, test_acc =\
+    model, train_loss, train_acc, test_loss, test_acc =\
         Training.moe_train(train_loader, test_loader, model, n_epochs, experiment_name, experts_coeff)
     save_vectors(experiment_name, train_acc, test_acc)
-    return data, model, train_loss, train_acc, test_loss, test_acc
+    return model, train_loss, train_acc, test_loss, test_acc
 
 if __name__ == '__main__':
     torch.manual_seed(42)
     with open('configuration.yaml', 'r') as f:
         config = yaml.load(f, Loader=SafeLoader)
-    data, model, train_loss, train_acc, test_loss, test_acc =\
-        main(n_epochs=100,
+    model, train_loss, train_acc, test_loss, test_acc =\
+        main(n_epochs=200,
            experts_coeff=0.00001,
            dataset_name='cifar10',
-           n_experts=1,
+           n_experts=2,
            expert_type='resnet18',
-           experiment_name='x',
+           experiment_name='cifar_2_experts',
            load_model=None
            )
     

@@ -72,47 +72,66 @@ def test(test_loader, model):
         return acc, loss
 
 def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, experts_coeff):
-    with open(f'./models/{experiment_name}_configuration.yaml', 'r') as f:
-        config = yaml.load(f, Loader=SafeLoader)
-    print(config['training'])
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if device == 'cuda':
+        model = torch.nn.DataParallel(model)
+        cudnn.benchmark = True
+    model = model.to(device)
     print(f'training with device: {device}')
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.1,
+                          momentum=0.9, weight_decay=5e-4)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+
     train_loss = []
     train_acc = []
     test_loss = []
     test_acc = []
-    data = {'train': train_loader, 'test': test_loader}
-    model = model.to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=config['training']['lr'],
-                          momentum=0.9, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=int(config['training']['step_size']*10), gamma=0.1)
     for epoch in range(n_epochs):
         model.train()
-        torch.cuda.empty_cache()
         running_loss = 0
-        for i, (images, labels) in enumerate(train_loader, start=1):
-            images = images.to(device)
-            labels = labels.to(device)
-            outputs, att_weights = model(images)
-            net_loss = criterion(outputs, labels)
-            experts_loss_ = experts_coeff * experts_loss(labels, att_weights.squeeze(2), model)
-            loss = net_loss + experts_loss_
-            running_loss += loss.item()
+        correct = 0
+        total = 0
+        for batch_idx, (inputs, targets) in enumerate(train_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
+            outputs, att_weights = model(inputs)
+            net_loss = criterion(outputs, targets)
+            experts_loss_ = experts_coeff * experts_loss(targets, att_weights.squeeze(2), model)
+            loss = net_loss + experts_loss_
+
             loss.backward()
             optimizer.step()
-            if i % 100 == 0:
-                lr = optimizer.defaults['lr'], scheduler.get_last_lr()
-                print(f'epoch: {epoch}, batch: {i}, loss: {round(running_loss/(100*train_loader.batch_size), 6)}'
-                      f', lr: {lr}')
-                running_loss = 0
-        Metrics.metrics_moe(model, data, epoch, train_loss, train_acc, test_loss, test_acc, experiment_name, experts_coeff)
-        scheduler.step()
-        if early_stop(test_acc):
-            return data, model, train_loss, train_acc, test_loss, test_acc
-    return data, model, train_loss, train_acc, test_loss, test_acc
 
+            running_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+        acc_train = round((correct/total)*100, 2)
+        print(f'epoch: {epoch}, train accuracy: {acc_train}')
+        acc_test = moe_test(test_loader, model)
+        train_acc.append(acc_train)
+        test_acc.append(acc_test)
+        print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
+        scheduler.step()
+        if acc_test == max(test_acc):
+            print('-----------------saving model-----------------')
+            torch.save(model, f'./models/{experiment_name}_model.pkl')
+    return model, train_loss, train_acc, test_loss, test_acc
+
+def moe_test(test_loader, model):
+    model.eval()
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(test_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs, att_weights = model(inputs)
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+        acc = round((correct / total)*100, 2)
+        return acc
 
 def experts_loss(labels, att_weights, model):
     labels = labels.to(device)

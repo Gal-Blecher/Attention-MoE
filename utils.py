@@ -137,6 +137,11 @@ train_config = {
             'input_dim': None,
             'batch_size': 64
         }
+    },
+    'nets': {
+        'resnet18': {
+            'emb_dim': 512
+        }
     }
 }
 with open('configuration.yaml', 'w') as f:

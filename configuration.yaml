@@ -18,3 +18,6 @@ dataset:
     n_classes: 10
     input_dim: null
     batch_size: 64
+nets:
+  resnet18:
+    emb_dim: 512
