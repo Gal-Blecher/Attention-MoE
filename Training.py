@@ -68,7 +68,7 @@ def test(test_loader, model):
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-        acc = round((correct / total)*100, 2)
+        acc = round((correct / total), 2)
         return acc, loss
 
 def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, experts_coeff):
