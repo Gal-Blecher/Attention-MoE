@@ -50,9 +50,9 @@ def main(n_epochs,
         print(model)
 
     if load_model is not None:
-        model = torch.load(load_model)
-        plots.plot_summary(model, model.expert1, test_loader, 1)
-        return
+        model = torch.load(load_model, map_location=torch.device('cpu'))
+        acc_l = Metrics.calc_acc(test_loader, model)
+        print(f'Loaded model accuracy is: {acc_l}')
     # test2 = model(instance)
     model, train_loss, train_acc, test_loss, test_acc =\
         Training.moe_train(train_loader, test_loader, model, n_epochs, experiment_name, experts_coeff)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
            n_experts=2,
            expert_type='resnet18',
            experiment_name='cifar_2_experts',
-           load_model=None
+           load_model='/Users/galblecher/Desktop/Thesis_out/cifar_2_experts_300_model.pkl'
            )
     
 

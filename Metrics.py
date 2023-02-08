@@ -87,7 +87,7 @@ def calc_acc(loader, model):
     for i, (images, labels) in enumerate(loader):
         images = images.to(device)
         labels = labels.to(device)
-        outputs = model(images)
+        outputs, _ = model(images)
         logits = F.softmax(outputs, dim=1)
         _, predicted = torch.max(logits, 1)
         n_correct += (predicted == labels).sum().item()
