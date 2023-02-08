@@ -67,11 +67,14 @@ if __name__ == '__main__':
         main(n_epochs=200,
            experts_coeff=0.00001,
            dataset_name='cifar10',
-           n_experts=2,
+           n_experts=1,
            expert_type='resnet18',
            experiment_name='cifar_2_experts',
-           load_model='/Users/galblecher/Desktop/Thesis_out/cifar_2_experts_300_model.pkl'
+           load_model='/Users/galblecher/Desktop/Thesis_out/cifar_1_expert/cifar_4_experts_300___model.pkl'
            )
-    
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 
 
