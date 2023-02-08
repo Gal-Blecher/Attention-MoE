@@ -68,9 +68,9 @@ if __name__ == '__main__':
            experts_coeff=0.00001,
            dataset_name='cifar10',
            n_experts=2,
-           expert_type='resnet18',
+           expert_type='vgg16',
            experiment_name='cifar_1_expert_vgg',
-           load_model='/Users/galblecher/Desktop/Thesis_out/cifar_2_experts_300_model.pkl'
+           load_model=None
            )
 
 def count_parameters(model):

@@ -141,6 +141,9 @@ train_config = {
     'nets': {
         'resnet18': {
             'emb_dim': 512
+        },
+        'vgg16': {
+            'emb_dim': 512
         }
     }
 }
