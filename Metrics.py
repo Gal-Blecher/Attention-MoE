@@ -95,3 +95,18 @@ def calc_acc(loader, model):
     acc = 100.0 * n_correct / n_tot
     print(acc)
     return acc
+
+def calc_acc_single_model(loader, model):
+    n_correct = 0
+    n_tot = 0
+    for i, (images, labels) in enumerate(loader):
+        images = images.to(device)
+        labels = labels.to(device)
+        _, outputs = model(images)
+        logits = F.softmax(outputs, dim=1)
+        _, predicted = torch.max(logits, 1)
+        n_correct += (predicted == labels).sum().item()
+        n_tot += labels.shape[0]
+    acc = 100.0 * n_correct / n_tot
+    print(acc)
+    return acc

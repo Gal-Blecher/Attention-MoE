@@ -37,7 +37,7 @@ def main(n_epochs,
         model = experts[0]
         if load_model is not None:
             model = torch.load(load_model, map_location=torch.device('cpu'))
-            acc_l = Metrics.calc_acc(test_loader, model)
+            acc_l = Metrics.calc_acc_single_model(test_loader, model)
             print(f'Loaded model accuracy is: {acc_l}')
         else:
             model, train_loss, train_acc, test_loss, test_acc= \
@@ -67,10 +67,10 @@ if __name__ == '__main__':
         main(n_epochs=200,
            experts_coeff=0.00001,
            dataset_name='cifar10',
-           n_experts=1,
-           expert_type='vgg16',
+           n_experts=2,
+           expert_type='resnet18',
            experiment_name='cifar_1_expert_vgg',
-           load_model=None
+           load_model='/Users/galblecher/Desktop/Thesis_out/cifar_2_experts_300_model.pkl'
            )
 
 def count_parameters(model):
