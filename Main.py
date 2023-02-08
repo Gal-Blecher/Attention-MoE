@@ -34,7 +34,7 @@ def main(n_epochs,
     instance = next(iter(train_loader))[0]
     test = experts[0](instance)
     if n_experts==1:
-        model = Experts.ResNet18()
+        model = experts[0]
         if load_model is not None:
             model = torch.load(load_model, map_location=torch.device('cpu'))
             acc_l = Metrics.calc_acc(test_loader, model)
@@ -68,9 +68,9 @@ if __name__ == '__main__':
            experts_coeff=0.00001,
            dataset_name='cifar10',
            n_experts=1,
-           expert_type='resnet18',
-           experiment_name='cifar_2_experts',
-           load_model='/Users/galblecher/Desktop/Thesis_out/cifar_1_expert/cifar_4_experts_300___model.pkl'
+           expert_type='vgg16',
+           experiment_name='cifar_1_expert_vgg',
+           load_model=None
            )
 
 def count_parameters(model):

@@ -46,7 +46,7 @@ def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name
         acc_test, test_loss = test(test_loader, model)
         train_acc.append(acc_train)
         test_acc.append(acc_test)
-        print(f'epoch: {epoch}, test accuracy: {round(acc_test*100, 2)}')
+        print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
         scheduler.step()
         if acc_test == max(test_acc):
             print('-----------------saving model-----------------')
@@ -68,7 +68,7 @@ def test(test_loader, model):
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-        acc = round((correct / total), 2)
+        acc = round((correct / total)*100, 2)
         return acc, loss
 
 def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, experts_coeff):

@@ -68,6 +68,9 @@ def create_experts(n_experts, expert_type, n_classes, input_dim):
     if expert_type=='naive_fc':
         for e in range(n_experts):
             experts.append(Naive_fc(e, input_dim=input_dim,n_classes=n_classes, latent_dim=2))
+    if expert_type=='vgg16':
+        for e in range(n_experts):
+            experts.append(VGG('VGG16', e))
 
 
     print(f'expert_type: {expert_type}\n'
@@ -221,6 +224,50 @@ def test(net):
         total_params += np.prod(x.data.numpy().shape)
     print("Total number of params", total_params)
     print("Total layers", len(list(filter(lambda p: p.requires_grad and len(p.data.size())>1, net.parameters()))))
+
+'''VGG11/13/16/19 in Pytorch.'''
+cfg = {
+    'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'VGG13': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+    'VGG16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
+    'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
+}
+
+
+class VGG(nn.Module):
+    def __init__(self, vgg_name, e):
+        super(VGG, self).__init__()
+        torch.manual_seed(e)
+        self.features = self._make_layers(cfg[vgg_name])
+        self.classifier = nn.Linear(512, 10)
+
+    def forward(self, x):
+        out = self.features(x)
+        z = out.view(out.size(0), -1)
+        out = self.classifier(z)
+        self.out = out
+        return z, out
+
+    def _make_layers(self, cfg):
+        layers = []
+        in_channels = 3
+        for x in cfg:
+            if x == 'M':
+                layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+            else:
+                layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
+                           nn.BatchNorm2d(x),
+                           nn.ReLU(inplace=True)]
+                in_channels = x
+        layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
+        return nn.Sequential(*layers)
+
+
+def test():
+    net = VGG('VGG11')
+    x = torch.randn(2,3,32,32)
+    y = net(x)
+    print(y.size())
 
 
 
