@@ -5,6 +5,7 @@ import yaml
 from yaml.loader import SafeLoader
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
+import itertools
 
 
 def full_model_train(train_loader, test_loader, model, n_epochs, experiment_name):
@@ -78,10 +79,15 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
         cudnn.benchmark = True
     model = model.to(device)
     print(f'training with device: {device}')
+    router_params = model.router.parameters()
+    experts_params = [model.expert1.parameters(), model.expert2.parameters()]
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=0.1,
+    optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=0.1,
                           momentum=0.9, weight_decay=5e-4)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=200)
+    optimizer_router = optim.SGD(router_params, lr=0.1,
+                          momentum=0.9, weight_decay=5e-4)
+    scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=200)
 
     train_loss = []
     train_acc = []
@@ -94,14 +100,16 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
         total = 0
         for batch_idx, (inputs, targets) in enumerate(train_loader):
             inputs, targets = inputs.to(device), targets.to(device)
-            optimizer.zero_grad()
+            optimizer_experts.zero_grad()
+            optimizer_router.zero_grad()
             outputs, att_weights = model(inputs)
             net_loss = criterion(outputs, targets)
             experts_loss_ = experts_coeff * experts_loss(targets, att_weights.squeeze(2), model)
             loss = net_loss + experts_loss_
 
             loss.backward()
-            optimizer.step()
+            optimizer_experts.step()
+            optimizer_router.step()
 
             running_loss += loss.item()
             _, predicted = outputs.max(1)
@@ -113,7 +121,8 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
         train_acc.append(acc_train)
         test_acc.append(acc_test)
         print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
-        scheduler.step()
+        scheduler_experts.step()
+        scheduler_router.step()
         if acc_test == max(test_acc):
             print('-----------------saving model-----------------')
             torch.save(model, f'./models/{experiment_name}_model.pkl')

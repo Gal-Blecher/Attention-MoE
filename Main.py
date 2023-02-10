@@ -65,12 +65,12 @@ if __name__ == '__main__':
         config = yaml.load(f, Loader=SafeLoader)
     model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=200,
-           experts_coeff=0.00001,
+           experts_coeff=1.0,
            dataset_name='cifar10',
            n_experts=4,
-           expert_type='vgg16',
+           expert_type='resnet18',
            experiment_name='cifar_1_expert_vgg',
-           load_model='/Users/galblecher/Desktop/Thesis_out/cifar/vgg16/4_experts/cifar_4_expert_vgg_model.pkl'
+           load_model=None
            )
 
 def count_parameters(model):
