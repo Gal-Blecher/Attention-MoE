@@ -66,10 +66,10 @@ if __name__ == '__main__':
     model, train_loss, train_acc, test_loss, test_acc =\
         main(n_epochs=200,
            experts_coeff=0.00001,
-           dataset_name='cifar10',
-           n_experts=2,
-           expert_type='vgg16',
-           experiment_name='cifar_1_expert_vgg',
+           dataset_name='cub200',
+           n_experts=1,
+           expert_type='resnet50',
+           experiment_name='cub200_1_expert',
            load_model=None
            )
 

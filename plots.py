@@ -4,6 +4,7 @@ import MixtureOfExperts
 
 def experts_areas(model, loader):
   model.eval()
+  device = 'cpu'
   model.to(device)
   dominant_dict = {}
   for i, (images, labels) in enumerate(loader, start=1):
@@ -105,8 +106,8 @@ def plot_data_latent(model, data, plot_boundary=None, show=True):
     z_points = z_points.detach().numpy()
     z_labels = z_labels.detach().numpy()
 
-    # if z_points.shape[1] > 2:
-    #     z_points = TSNE(n_components=2, learning_rate='auto', init='random', random_state=11).fit_transform(z_points)
+    if z_points.shape[1] > 2:
+        z_points = TSNE(n_components=2, learning_rate='auto', init='random', random_state=11).fit_transform(z_points)
 
     points_df = pd.DataFrame({'x': z_points[:, 0],
                               'y': z_points[:, 1],
@@ -122,7 +123,7 @@ def plot_data_latent(model, data, plot_boundary=None, show=True):
 
     if (show == True):
         sns.scatterplot(data=points_df, x='x', y='y', hue='label', palette='Paired', edgecolor="black",
-                        s=40, legend='full').set(title='Expert Latent Representation')
+                        s=40, legend='full').set(title='1 Expert Latent Representation')
         plt.show()
 
     return points_df
