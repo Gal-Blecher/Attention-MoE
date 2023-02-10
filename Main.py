@@ -67,9 +67,9 @@ if __name__ == '__main__':
         main(n_epochs=200,
            experts_coeff=1.0,
            dataset_name='cifar10',
-           n_experts=4,
+           n_experts=2,
            expert_type='resnet18',
-           experiment_name='cifar_1_expert_vgg',
+           experiment_name='cifar_2_expert_resnet18_sep_loss',
            load_model=None
            )
 
