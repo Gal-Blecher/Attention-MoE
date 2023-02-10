@@ -57,7 +57,7 @@ def prepare_data(batch_size, dataset_name):
         train_data = utils.Cub2011('./cub2011', train=True, download=True, transform=transform_train)
         test_data = utils.Cub2011('./cub2011', train=False, download=True, transform=transform_test)
 
-        train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
+        train_loader = torch.utils.data.DataLoader(train_data, batch_size=16, shuffle=True)
         test_loader = torch.utils.data.DataLoader(test_data, batch_size=4, shuffle=False)
 
     print_data_info(train_loader, test_loader, dataset_name)
@@ -73,5 +73,5 @@ def print_data_info(train_loader, test_loader, dataset_name):
         test_class_counts = torch.unique(torch.tensor(test_loader.dataset.targets), return_counts=True)[1]
     print(f'train loader length: {train_loader.dataset.__len__()}')
     print(f'Instances per class in the train loader: \n {train_class_counts}')
-    print(f'train loader length: {test_loader.dataset.__len__()}')
+    print(f'test loader length: {test_loader.dataset.__len__()}')
     print(f'Instances per class in the test loader: \n {test_class_counts}')
