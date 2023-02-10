@@ -115,8 +115,8 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-            if batch_idx % 50 == 0:
-                print(f'experts ratio: {att_weights.sum(0)}')
+            # if batch_idx % 50 == 0:
+            #     print(f'experts ratio: {att_weights.sum(0).data}')
         acc_train = round((correct/total)*100, 2)
         print(f'epoch: {epoch}, train accuracy: {acc_train}')
         acc_test = moe_test(test_loader, model)

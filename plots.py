@@ -13,7 +13,8 @@ def experts_areas(model, loader):
       weights = model(images)[1].squeeze(1)
       dominant_experts = torch.max(weights, axis=1)[1]
       for l in torch.unique(labels):
-        dom_exp, count = torch.unique(dominant_experts[labels==l], return_counts=True)
+        expert_specific_label = dominant_experts[labels==l]
+        dom_exp, count = torch.unique(expert_specific_label, return_counts=True)
         for c, exp in enumerate(dom_exp):
           if str(exp.item()) not in dominant_dict.keys():
             dominant_dict[str(exp.item())] = torch.zeros(10).to(device)
