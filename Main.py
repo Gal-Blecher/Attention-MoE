@@ -69,7 +69,7 @@ if __name__ == '__main__':
            dataset_name='cifar10',
            n_experts=2,
            expert_type='resnet18',
-           experiment_name='cifar_2_expert_resnet18_sep_loss',
+           experiment_name='cifar_2_expert_resnet18_kl',
            load_model=None
            )
 

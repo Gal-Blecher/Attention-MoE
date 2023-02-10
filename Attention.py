@@ -16,7 +16,7 @@ class AdditiveAttention(nn.Module):
     def forward(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         score = self.score_proj(torch.tanh(self.key_proj(key) + self.query_proj(query) + self.bias)).squeeze(1)
         attn = F.softmax(score, dim=0)
-        if self.warm_up < 50:
-            self.warm_up += 1
-            attn = torch.full_like(attn, 0.5)
+        # if self.warm_up < 50:
+        #     self.warm_up += 1
+        #     attn = torch.full_like(attn, 0.5)
         return attn

@@ -85,7 +85,7 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
     optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=0.1,
                           momentum=0.9, weight_decay=5e-4)
     scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=200)
-    optimizer_router = optim.SGD(router_params, lr=0.01,
+    optimizer_router = optim.SGD(router_params, lr=0.1,
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=200)
 
@@ -105,7 +105,8 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
             outputs, att_weights = model(inputs)
             net_loss = criterion(outputs, targets)
             experts_loss_ = experts_coeff * experts_loss(targets, att_weights.squeeze(2), model)
-            loss = net_loss + experts_loss_
+            kl_loss = kl_divergence(att_weights.sum(0))
+            loss = net_loss + experts_loss_ + 3*kl_loss
 
             loss.backward()
             optimizer_experts.step()
@@ -115,8 +116,8 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-            # if batch_idx % 50 == 0:
-            #     print(f'experts ratio: {att_weights.sum(0).data}')
+            if batch_idx % 50 == 0:
+                print(f'experts ratio: {att_weights.sum(0).data}')
         acc_train = round((correct/total)*100, 2)
         print(f'epoch: {epoch}, train accuracy: {acc_train}')
         acc_test = moe_test(test_loader, model)
@@ -213,3 +214,9 @@ def early_stop(acc_test_list):
         return True
     else:
         return False
+
+def kl_divergence(vector):
+    n = vector.size(0)
+    uniform = torch.ones(n) / n
+    p = vector / vector.sum()
+    return (p * torch.log(p / uniform)).sum()
