@@ -21,22 +21,22 @@ from torchvision import models
 #         logits = F.softmax(self.out, dim=1)
 #         return z, logits
 
-class Resnet50(nn.Module):
-    def __init__(self, seed, n_classes):
-        super(Resnet50, self).__init__()
-        torch.manual_seed(seed=seed)
-        resnet50 = models.resnet50(pretrained=True)
-        resnet50.avgpool = nn.AdaptiveAvgPool2d((1,1))
-        modules = list(resnet50.children())[:-1]
-        self.model = nn.Sequential(*modules)
-        self.clf = nn.Linear(2048, n_classes)
-        self.z_dim = 2048
-
-    def forward(self, X):
-        z = self.model(X).squeeze(2).squeeze(2)
-        self.out = self.clf(z)
-        logits = F.softmax(self.out, dim=1)
-        return z, logits
+# class Resnet50(nn.Module):
+#     def __init__(self, seed, n_classes):
+#         super(Resnet50, self).__init__()
+#         torch.manual_seed(seed=seed)
+#         resnet50 = models.resnet50(pretrained=True)
+#         resnet50.avgpool = nn.AdaptiveAvgPool2d((1,1))
+#         modules = list(resnet50.children())[:-1]
+#         self.model = nn.Sequential(*modules)
+#         self.clf = nn.Linear(2048, n_classes)
+#         self.z_dim = 2048
+#
+#     def forward(self, X):
+#         z = self.model(X).squeeze(2).squeeze(2)
+#         self.out = self.clf(z)
+#         logits = F.softmax(self.out, dim=1)
+#         return z, logits
 
 class Naive_fc(nn.Module):
     def __init__(self,seed, input_dim, n_classes, latent_dim):
@@ -61,10 +61,10 @@ def create_experts(n_experts, expert_type, n_classes, input_dim):
     experts = []
     if expert_type=='resnet18':
         for e in range(n_experts):
-            experts.append(ResNet18())
+            experts.append(ResNet18(e))
     if expert_type=='resnet50':
         for e in range(n_experts):
-            experts.append(Resnet50(e, n_classes=n_classes))
+            experts.append(ResNet50(e))
     if expert_type=='naive_fc':
         for e in range(n_experts):
             experts.append(Naive_fc(e, input_dim=input_dim,n_classes=n_classes, latent_dim=2))
@@ -153,8 +153,9 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10):
+    def __init__(self, block, num_blocks, num_classes=10, e=1):
         super(ResNet, self).__init__()
+        torch.manual_seed(e)
         self.in_planes = 64
 
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3,
@@ -187,16 +188,16 @@ class ResNet(nn.Module):
         return z, out
 
 
-def ResNet18():
-    return ResNet(BasicBlock, [2, 2, 2, 2])
+def ResNet18(e):
+    return ResNet(BasicBlock, [2, 2, 2, 2], e)
 
 
 def ResNet34():
     return ResNet(BasicBlock, [3, 4, 6, 3])
 
 
-def ResNet50():
-    return ResNet(Bottleneck, [3, 4, 6, 3])
+def ResNet50(e):
+    return ResNet(Bottleneck, [3, 4, 6, 3], e)
 
 
 def ResNet101():
