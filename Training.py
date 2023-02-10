@@ -85,7 +85,7 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
     optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=0.1,
                           momentum=0.9, weight_decay=5e-4)
     scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=200)
-    optimizer_router = optim.SGD(router_params, lr=0.1,
+    optimizer_router = optim.SGD(router_params, lr=0.01,
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=200)
 
@@ -115,6 +115,8 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            if batch_idx % 50 == 0:
+                print(f'experts ratio: {att_weights.sum(0)}')
         acc_train = round((correct/total)*100, 2)
         print(f'epoch: {epoch}, train accuracy: {acc_train}')
         acc_test = moe_test(test_loader, model)
