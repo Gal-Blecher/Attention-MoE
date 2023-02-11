@@ -3,10 +3,11 @@ import torchvision
 import torch
 from torchvision.datasets import MNIST
 import utils
+from config import setup
 
-def prepare_data(batch_size, dataset_name):
-    if dataset_name == 'cifar10':
-        print('==> Preparing data..')
+def get_dataset():
+    if setup['dataset_name'] == 'cifar10':
+        print(f'==> Preparing data cifar10')
         transform_train = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
@@ -32,13 +33,15 @@ def prepare_data(batch_size, dataset_name):
         classes = ('plane', 'car', 'bird', 'cat', 'deer',
                    'dog', 'frog', 'horse', 'ship', 'truck')
 
-    if dataset_name == 'mnist':
+    if setup['dataset_name'] == 'mnist':
+        print(f'==> Preparing data MNIST')
         train_dataset = MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_dataset = MNIST(root='./data', train=False, transform=transforms.ToTensor())
         train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
         test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
-    if dataset_name == 'cub200':
+    if setup['dataset_name'] == 'cub200':
+        print(f'==> Preparing data CUB200')
         transform_train = transforms.Compose([
                 transforms.RandomResizedCrop(448),
                 transforms.RandomHorizontalFlip(),
@@ -60,9 +63,12 @@ def prepare_data(batch_size, dataset_name):
         train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
         test_loader = torch.utils.data.DataLoader(test_data, batch_size=4, shuffle=False)
 
-    print_data_info(train_loader, test_loader, dataset_name)
+    print_data_info(train_loader, test_loader, setup['dataset_name'])
 
-    return train_loader, test_loader
+    dataset = {'train_loader': train_loader,
+               'test_loader': test_loader}
+
+    return dataset
 
 def print_data_info(train_loader, test_loader, dataset_name):
     if dataset_name == 'cub200':
