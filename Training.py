@@ -82,10 +82,10 @@ def moe_train(train_loader, test_loader, model, n_epochs , experiment_name, expe
     router_params = model.router.parameters()
     experts_params = [model.expert1.parameters(), model.expert2.parameters()]
     criterion = nn.CrossEntropyLoss()
-    optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=0.1,
+    optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=0.01,
                           momentum=0.9, weight_decay=5e-4)
     scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=200)
-    optimizer_router = optim.SGD(router_params, lr=0.1,
+    optimizer_router = optim.SGD(router_params, lr=0.001,
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=200)
 
@@ -216,7 +216,8 @@ def early_stop(acc_test_list):
         return False
 
 def kl_divergence(vector):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     n = vector.size(0)
-    uniform = torch.ones(n) / n
+    uniform = (torch.ones(n) / n).to(device)
     p = vector / vector.sum()
     return (p * torch.log(p / uniform)).sum()
