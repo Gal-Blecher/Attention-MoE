@@ -5,6 +5,7 @@ import torch.nn as nn
 import itertools
 from config import setup, train_config
 import os
+import json
 
 
 
@@ -85,16 +86,15 @@ def moe_train(model, dataset):
     model = model.to(device)
     print(f'training with device: {device}')
     router_params = model.router.parameters()
-    experts_params = [model.expert1.parameters(), model.expert2.parameters()]
+    experts_params = get_experts_params_list(model)
     criterion = nn.CrossEntropyLoss()
     optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=setup['lr'],
                           momentum=0.9, weight_decay=5e-4)
     scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=setup['n_epochs'])
-    optimizer_router = optim.SGD(router_params, lr=0.001,
+    optimizer_router = optim.SGD(router_params, lr=setup['router_lr'],
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
 
-    test_loss = []
     test_acc = []
     for epoch in range(setup['n_epochs']):
         model.train()
@@ -136,6 +136,12 @@ def moe_train(model, dataset):
             if not os.path.exists(path):
                 os.makedirs(path)
             torch.save(model, f'{path}/model.pkl')
+            with open(f"{path}/config.txt", "w") as file:
+                file.write(json.dumps(setup))
+                file.write(json.dumps(train_config))
+            with open(f"{path}/accuracy.txt", "w") as file:
+                file.write(f'{acc_test}')
+
 
 def moe_test(test_loader, model):
     device = train_config['device']
@@ -229,3 +235,28 @@ def kl_divergence(vector):
     uniform = (torch.ones(n) / n).to(device)
     p = vector / vector.sum()
     return (p * torch.log(p / uniform)).sum()
+
+def get_experts_params_list(model):
+    if model.n_experts == 2:
+        experts_params = [model.expert1.parameters(), model.expert2.parameters()]
+        return experts_params
+    if model.n_experts == 4:
+        experts_params = [model.expert1.parameters(), model.expert2.parameters(),
+                          model.expert3.parameters(), model.expert4.parameters()]
+        return experts_params
+    if model.n_experts == 8:
+        experts_params = [model.expert1.parameters(), model.expert2.parameters(),
+                          model.expert3.parameters(), model.expert4.parameters(),
+                          model.expert5.parameters(), model.expert6.parameters(),
+                          model.expert7.parameters(), model.expert8.parameters()]
+        return experts_params
+    if model.n_experts == 16:
+        experts_params = [model.expert1.parameters(), model.expert2.parameters(),
+                          model.expert3.parameters(), model.expert4.parameters(),
+                          model.expert5.parameters(), model.expert6.parameters(),
+                          model.expert7.parameters(), model.expert8.parameters(),
+                          model.expert9.parameters(), model.expert10.parameters(),
+                          model.expert11.parameters(), model.expert12.parameters(),
+                          model.expert13.parameters(), model.expert14.parameters(),
+                          model.expert15.parameters(), model.expert16.parameters()]
+        return experts_params

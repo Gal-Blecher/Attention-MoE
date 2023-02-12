@@ -30,17 +30,18 @@ train_config = {
             'emb_dim': 512
         }
     },
-    'device': device
+    'device': device.type
 }
 
 setup = {'n_epochs': 200,
          'lr': 0.01,
+         'router_lr': 0.001,
          'kl_coeff': 0.1,
          'expert_type': 'resnet18',
          'dataset_name': 'cifar10',
-         'n_experts': 2,
+         'n_experts': 8,
          'experiment_name': 'resnet18_2_expert_cifar10',
-         'model_checkpoint_path': '/Users/galblecher/Desktop/cifar_4_expert_vgg16_kl__model.pkl'}
+         'model_checkpoint_path': None}
 
 
 # with open('configuration.yaml', 'w') as f:
@@ -50,4 +51,4 @@ def run_config():
     pass
 
 if __name__ == '__main__':
-    save_config()
+    pass
