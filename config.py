@@ -40,7 +40,7 @@ setup = {'n_epochs': 200,
          'dataset_name': 'cifar10',
          'n_experts': 2,
          'experiment_name': 'resnet18_2_expert_cifar10',
-         'model_checkpoint_path': None}
+         'model_checkpoint_path': '/Users/galblecher/Desktop/cifar_4_expert_vgg16_kl__model.pkl'}
 
 
 # with open('configuration.yaml', 'w') as f:

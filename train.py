@@ -76,7 +76,6 @@ def test(test_loader, model):
         acc = round((correct / total)*100, 2)
         return acc, loss
 
-
 def moe_train(model, dataset):
     experiment_name = setup['experiment_name']
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
