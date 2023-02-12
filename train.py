@@ -142,7 +142,6 @@ def moe_train(model, dataset):
             with open(f"{path}/accuracy.txt", "w") as file:
                 file.write(f'{acc_test}')
 
-
 def moe_test(test_loader, model):
     device = train_config['device']
     model.eval()
