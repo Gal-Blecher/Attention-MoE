@@ -5,7 +5,9 @@ from torchvision.datasets import MNIST
 import utils
 from config import setup
 
-def get_dataset():
+def get_dataset(dataset_name=None):
+    if dataset_name != None:
+        setup['dataset_name'] = dataset_name
     if setup['dataset_name'] == 'cifar10':
         print(f'==> Preparing data cifar10')
         transform_train = transforms.Compose([

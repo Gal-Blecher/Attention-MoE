@@ -6,6 +6,7 @@ import itertools
 from config import setup, train_config
 import os
 import json
+import pickle
 
 
 
@@ -94,7 +95,7 @@ def moe_train(model, dataset):
     optimizer_router = optim.SGD(router_params, lr=setup['router_lr'],
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
-
+    path = './models/' + experiment_name
     test_acc = []
     for epoch in range(setup['n_epochs']):
         model.train()
@@ -132,7 +133,6 @@ def moe_train(model, dataset):
         scheduler_router.step()
         if acc_test == max(test_acc):
             print('--------------------------------------------saving model--------------------------------------------')
-            path = './models/' + experiment_name
             if not os.path.exists(path):
                 os.makedirs(path)
             torch.save(model, f'{path}/model.pkl')
@@ -141,6 +141,8 @@ def moe_train(model, dataset):
                 file.write(json.dumps(train_config))
             with open(f"{path}/accuracy.txt", "w") as file:
                 file.write(f'{acc_test}')
+    with open(f'{path}/acc_test', 'wb') as f:
+        pickle.dump(acc_test, f)
 
 def moe_test(test_loader, model):
     device = train_config['device']
