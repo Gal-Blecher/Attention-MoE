@@ -140,7 +140,7 @@ def moe_train(model, dataset):
                 file.write(json.dumps(setup))
                 file.write(json.dumps(train_config))
             with open(f"{path}/accuracy.txt", "w") as file:
-                file.write(f'{acc_test}')
+                file.write(f'{epoch}: {acc_test}')
     with open(f'{path}/acc_test', 'wb') as f:
         pickle.dump(acc_test, f)
 

@@ -9,6 +9,8 @@ import datasets
 
 
 def plot_data_latent(model, data, plot_boundary=None, show=True):
+    classes = ('plane', 'car', 'bird', 'cat', 'deer',
+               'dog', 'frog', 'horse', 'ship', 'truck')
     z_points = torch.tensor([])
     z_labels = torch.tensor([])
     model.eval().cpu()
