@@ -131,6 +131,8 @@ def moe_train(model, dataset):
         print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
         scheduler_experts.step()
         scheduler_router.step()
+        with open(f"{path}/current_epoch.txt", "w") as file:
+            file.write(f'{epoch}')
         if acc_test == max(test_acc):
             print('--------------------------------------------saving model--------------------------------------------')
             if not os.path.exists(path):
@@ -141,7 +143,7 @@ def moe_train(model, dataset):
                 file.write(json.dumps(train_config))
             with open(f"{path}/accuracy.txt", "w") as file:
                 file.write(f'{epoch}: {acc_test}')
-    with open(f'{path}/acc_test', 'wb') as f:
+    with open(f'{path}/acc_test.pkl', 'wb') as f:
         pickle.dump(acc_test, f)
 
 def moe_test(test_loader, model):
