@@ -100,7 +100,7 @@ def moe_train(model, dataset):
     optimizer_router = optim.SGD(router_params, lr=setup['router_lr'],
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
-    test_acc = []
+    model.test_acc = []
     for epoch in range(setup['n_epochs']):
         model.train()
         running_loss = 0
