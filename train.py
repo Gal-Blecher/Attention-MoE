@@ -144,7 +144,7 @@ def moe_train(model, dataset):
             with open(f"{path}/accuracy.txt", "w") as file:
                 file.write(f'{epoch}: {acc_test}')
     with open(f'{path}/acc_test.pkl', 'wb') as f:
-        pickle.dump(acc_test, f)
+        pickle.dump(model.acc_test, f)
 
 def moe_test(test_loader, model):
     device = train_config['device']
