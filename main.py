@@ -4,10 +4,14 @@ import datasets
 import build
 import train
 import plots
+import os
 
 torch.manual_seed(42)
 
 if __name__ == '__main__':
+    path = './models/' + setup['experiment_name']
+    if not os.path.exists(path):
+        os.makedirs(path)
     dataset = datasets.get_dataset()
     if setup['model_checkpoint_path'] != None:
         model = torch.load(setup['model_checkpoint_path'], map_location=torch.device('cpu'))

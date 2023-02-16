@@ -7,6 +7,7 @@ from config import setup, train_config
 import os
 import json
 import pickle
+from utils import get_logger
 
 
 
@@ -79,13 +80,17 @@ def test(test_loader, model):
         return acc, loss
 
 def moe_train(model, dataset):
-    experiment_name = setup['experiment_name']
+    logger = get_logger(setup['experiment_name'])
+    for key, value in setup.items():
+        to_log = str(key) + ': ' + str(value)
+        logger.info(to_log)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    path = './models/' + setup['experiment_name']
     if device == 'cuda':
         model = torch.nn.DataParallel(model)
         cudnn.benchmark = True
     model = model.to(device)
-    print(f'training with device: {device}')
+    logger.info(f'training with device: {device}')
     router_params = model.router.parameters()
     experts_params = get_experts_params_list(model)
     criterion = nn.CrossEntropyLoss()
@@ -95,7 +100,6 @@ def moe_train(model, dataset):
     optimizer_router = optim.SGD(router_params, lr=setup['router_lr'],
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
-    path = './models/' + experiment_name
     test_acc = []
     for epoch in range(setup['n_epochs']):
         model.train()
@@ -121,22 +125,18 @@ def moe_train(model, dataset):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             if batch_idx % 50 == 0:
-                print(f'batch_idx: {batch_idx}, train accuracy: {round((correct/total), 2)}')
-            if batch_idx % 50 == 0:
-                print(f'experts ratio: {att_weights.sum(0).data.T}')
+                logger.info(f'batch_idx: {batch_idx}, experts ratio: {att_weights.sum(0).data.T}')
         acc_train = round((correct/total)*100, 2)
-        print(f'epoch: {epoch}, train accuracy: {acc_train}')
+        logger.info(f'epoch: {epoch}, train accuracy: {acc_train}')
         acc_test = moe_test(dataset['test_loader'], model)
         test_acc.append(acc_test)
-        print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
+        logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
         scheduler_experts.step()
         scheduler_router.step()
         with open(f"{path}/current_epoch.txt", "w") as file:
             file.write(f'{epoch}')
         if acc_test == max(test_acc):
-            print('--------------------------------------------saving model--------------------------------------------')
-            if not os.path.exists(path):
-                os.makedirs(path)
+            logger.info('--------------------------------------------saving model--------------------------------------------')
             torch.save(model, f'{path}/model.pkl')
             with open(f"{path}/config.txt", "w") as file:
                 file.write(json.dumps(setup))
