@@ -215,17 +215,23 @@ class LeNet5(nn.Module):
 
 
 class ResNet50(nn.Module):
-    def __init__(self, pre_trained=True, n_class=200):
+    def __init__(self,e, pre_trained=True, n_class=200):
         super(ResNet50, self).__init__()
+        torch.manual_seed(e)
         self.n_class = n_class
-        self.base_model = models.resnet50(pretrained=pre_trained)
-        self.base_model.avgpool = nn.AdaptiveAvgPool2d((1,1))
-        self.base_model.fc = nn.Linear(512*4, n_class)
-        self.base_model.fc.apply(weight_init_kaiming)
+        base_model = models.resnet50(pretrained=pre_trained)
+        base_model.avgpool = nn.AdaptiveAvgPool2d((1,1))
+        modules = list(base_model.children())[:-1]
+        self.model = nn.Sequential(*modules)
+        self.clf = nn.Linear(512*4, n_class)
+        self.clf.apply(weight_init_kaiming)
 
     def forward(self, x):
-        x = self.base_model(x)
-        return x
+        z = self.model(x)
+        z = z.flatten(start_dim=1)
+        out = self.clf(z)
+        self.out = out
+        return z, out
 
 def weight_init_kaiming(m):
     class_names = m.__class__.__name__

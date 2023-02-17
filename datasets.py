@@ -76,8 +76,8 @@ def get_dataset(dataset_name=None):
 
 def print_data_info(train_loader, test_loader, dataset_name):
     if dataset_name == 'cub200':
-        train_class_counts = torch.unique(torch.tensor(train_loader.dataset.data.target.values), return_counts=True)[1]
-        test_class_counts = torch.unique(torch.tensor(test_loader.dataset.data.target.values), return_counts=True)[1]
+        train_class_counts = torch.unique(torch.tensor(train_loader.dataset.train_label), return_counts=True)[1]
+        test_class_counts = torch.unique(torch.tensor(test_loader.dataset.test_label), return_counts=True)[1]
     else:
         train_class_counts = torch.unique(torch.tensor(train_loader.dataset.targets), return_counts=True)[1]
         test_class_counts = torch.unique(torch.tensor(test_loader.dataset.targets), return_counts=True)[1]

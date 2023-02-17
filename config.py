@@ -28,6 +28,9 @@ train_config = {
         },
         'vgg16': {
             'emb_dim': 512
+        },
+        'resnet50': {
+            'emb_dim': 2048
         }
     },
     'device': device.type

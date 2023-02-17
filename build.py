@@ -24,7 +24,7 @@ def create_experts():
             experts.append(nets.ResNet18(e))
     if setup['expert_type']=='resnet50':
         for e in range(setup['n_experts']):
-            experts.append(nets.Resnet50(e))
+            experts.append(nets.ResNet50(e))
     if setup['expert_type']=='naive_fc':
         for e in range(setup['n_experts']):
             experts.append(nets.Naive_fc(e,
