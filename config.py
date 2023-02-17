@@ -33,13 +33,13 @@ train_config = {
     'device': device.type
 }
 
-setup = {'n_epochs': 200,
-         'lr': 0.01,
+setup = {'n_epochs': 100,
+         'lr': 0.001,
          'router_lr': 0.001,
          'kl_coeff': 0.1,
-         'expert_type': 'resnet18',
-         'dataset_name': 'cifar10',
-         'n_experts': 2,
+         'expert_type': 'resnet50',
+         'dataset_name': 'cub200',
+         'n_experts': 1,
          'experiment_name': 'test',
          'model_checkpoint_path': None,
          'evaluate': False}

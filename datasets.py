@@ -59,8 +59,10 @@ def get_dataset(dataset_name=None):
                                      std=(0.229, 0.224, 0.225))
             ])
 
-        train_data = utils.Cub2011('./cub2011', train=True, download=True, transform=transform_train)
-        test_data = utils.Cub2011('./cub2011', train=False, download=True, transform=transform_test)
+
+
+        train_data = utils.Cub200('./cub2011', train=True, transform=transform_train)
+        test_data = utils.Cub200('./cub2011', train=False, transform=transform_test)
 
         train_loader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
         test_loader = torch.utils.data.DataLoader(test_data, batch_size=4, shuffle=False)

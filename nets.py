@@ -129,9 +129,9 @@ def ResNet34():
     return ResNet(BasicBlock, [3, 4, 6, 3])
 
 
-def ResNet50(e):
-    torch.manual_seed(e)
-    return ResNet(Bottleneck, [3, 4, 6, 3])
+# def ResNet50(e):
+#     torch.manual_seed(e)
+#     return ResNet(Bottleneck, [3, 4, 6, 3])
 
 
 def ResNet101():
@@ -178,3 +178,59 @@ class VGG(nn.Module):
                 in_channels = x
         layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
         return nn.Sequential(*layers)
+
+
+class LeNet5(nn.Module):
+    def __init__(self, input_channel=1, padding=0, output_size=10):
+        super(LeNet5, self).__init__()
+        self.conv1 = nn.Conv2d(input_channel, 6, kernel_size=(5, 5), padding=padding)
+        self.relu1 = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size=(5, 5))
+        self.relu2 = nn.ReLU()
+        self.maxpool2 = nn.MaxPool2d(kernel_size=(2, 2), stride=2)
+        self.conv3 = nn.Conv2d(16, 120, kernel_size=(5, 5))
+        self.relu3 = nn.ReLU()
+        self.fc1 = nn.Linear(120, 84)
+        self.relu4 = nn.ReLU()
+        self.fc2 = nn.Linear(84, output_size)
+
+    def forward(self, img, out_feature=False):
+        output = self.conv1(img)
+        output = self.relu1(output)
+        output = self.maxpool1(output)
+        output = self.conv2(output)
+        output = self.relu2(output)
+        output = self.maxpool2(output)
+        output = self.conv3(output)
+        output = self.relu3(output)
+        feature = output.view(-1, 120)
+        output = self.fc1(feature)
+        output = self.relu4(output)
+        output = self.fc2(output)
+        if out_feature:
+            return output, feature
+        else:
+            return output
+
+
+class ResNet50(nn.Module):
+    def __init__(self, pre_trained=True, n_class=200):
+        super(ResNet50, self).__init__()
+        self.n_class = n_class
+        self.base_model = models.resnet50(pretrained=pre_trained)
+        self.base_model.avgpool = nn.AdaptiveAvgPool2d((1,1))
+        self.base_model.fc = nn.Linear(512*4, n_class)
+        self.base_model.fc.apply(weight_init_kaiming)
+
+    def forward(self, x):
+        x = self.base_model(x)
+        return x
+
+def weight_init_kaiming(m):
+    class_names = m.__class__.__name__
+    if class_names.find('Conv') != -1:
+        init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+    elif class_names.find('Linear') != -1:
+        init.kaiming_normal_(m.weight.data)
+        # init.constant_(m.bias.data, 0.0)
