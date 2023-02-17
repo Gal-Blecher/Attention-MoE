@@ -224,7 +224,7 @@ class ResNet50(nn.Module):
         modules = list(base_model.children())[:-1]
         self.model = nn.Sequential(*modules)
         self.clf = nn.Linear(512*4, n_class)
-        self.clf.apply(weight_init_kaiming, e)
+        self.clf.apply(weight_init_kaiming)
 
     def forward(self, x):
         z = self.model(x)
@@ -233,8 +233,7 @@ class ResNet50(nn.Module):
         self.out = out
         return z, out
 
-def weight_init_kaiming(m, e):
-    torch.manual_seed(e)
+def weight_init_kaiming(m):
     class_names = m.__class__.__name__
     if class_names.find('Conv') != -1:
         init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
