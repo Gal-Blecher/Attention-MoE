@@ -42,8 +42,8 @@ setup = {'n_epochs': 100,
          'kl_coeff': 0.1,
          'expert_type': 'resnet50',
          'dataset_name': 'cub200',
-         'n_experts': 2,
-         'experiment_name': 'test',
+         'n_experts': 1,
+         'experiment_name': 'cub200_1_expert',
          'model_checkpoint_path': None,
          'evaluate': False}
 
