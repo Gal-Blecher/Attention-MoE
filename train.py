@@ -47,19 +47,21 @@ def train_expert(model, dataset):
             if batch_idx % 50 == 0:
                 print(f'batch_idx: {batch_idx}, train accuracy: {round((correct/total), 2)}')
 
+        scheduler.step()
         acc_train = round((correct/total)*100, 2)
         print(f'epoch: {epoch}, train accuracy: {acc_train}')
-        acc_test, test_loss = test(dataset['test_loader'], model)
-        train_acc.append(acc_train)
-        test_acc.append(acc_test)
-        print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
-        scheduler.step()
-        if acc_test == max(test_acc):
-            print('--------------------------------------------saving model--------------------------------------------')
-            path = './models/' + experiment_name
-            if not os.path.exists(path):
-                os.makedirs(path)
-            torch.save(model, f'{path}/model.pkl')
+        if epoch % 5 == 0:
+            acc_test, test_loss = test(dataset['test_loader'], model)
+            train_acc.append(acc_train)
+            test_acc.append(acc_test)
+            print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
+
+            if acc_test == max(test_acc):
+                print('--------------------------------------------saving model--------------------------------------------')
+                path = './models/' + experiment_name
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                torch.save(model, f'{path}/model.pkl')
 
 def test(test_loader, model):
     criterion = nn.CrossEntropyLoss()
