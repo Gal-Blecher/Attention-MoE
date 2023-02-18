@@ -67,7 +67,7 @@ def get_dataset(dataset_name=None):
         test_data = utils.Cub200('./cub2011', train=False, transform=transform_test)
 
         train_loader = torch.utils.data.DataLoader(train_data, batch_size=config.train_config['dataset']['cub200']['batch_size'], shuffle=True)
-        test_loader = torch.utils.data.DataLoader(test_data, batch_size=4, shuffle=False)
+        test_loader = torch.utils.data.DataLoader(test_data, batch_size=config.train_config['dataset']['cub200']['batch_size'], shuffle=False)
 
     print_data_info(train_loader, test_loader, setup['dataset_name'])
 

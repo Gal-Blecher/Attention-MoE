@@ -9,7 +9,7 @@ train_config = {
         'cub200': {
             'n_classes': 200,
             'input_dim': None,
-            'batch_size': 8
+            'batch_size': 20
         },
         'mnist': {
             'n_classes': 10,
