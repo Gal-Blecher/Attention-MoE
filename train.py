@@ -129,13 +129,13 @@ def moe_train(model, dataset):
         acc_train = round((correct/total)*100, 2)
         logger.info(f'epoch: {epoch}, train accuracy: {acc_train}')
         acc_test = moe_test(dataset['test_loader'], model)
-        test_acc.append(acc_test)
+        model.test_acc.append(acc_test)
         logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
         scheduler_experts.step()
         scheduler_router.step()
         with open(f"{path}/current_epoch.txt", "w") as file:
             file.write(f'{epoch}')
-        if acc_test == max(test_acc):
+        if acc_test == max(model.test_acc):
             logger.info('--------------------------------------------saving model--------------------------------------------')
             torch.save(model, f'{path}/model.pkl')
             with open(f"{path}/config.txt", "w") as file:
@@ -144,7 +144,7 @@ def moe_train(model, dataset):
             with open(f"{path}/accuracy.txt", "w") as file:
                 file.write(f'{epoch}: {acc_test}')
     with open(f'{path}/acc_test.pkl', 'wb') as f:
-        pickle.dump(model.acc_test, f)
+        pickle.dump(model.test_acc, f)
 
 def moe_test(test_loader, model):
     device = train_config['device']
