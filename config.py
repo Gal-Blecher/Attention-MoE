@@ -39,11 +39,11 @@ train_config = {
 setup = {'n_epochs': 100,
          'lr': 0.001,
          'router_lr': 0.001,
-         'kl_coeff': 0.1,
+         'kl_coeff': 0.01,
          'expert_type': 'resnet50',
          'dataset_name': 'cub200',
-         'n_experts': 1,
-         'experiment_name': 'cub200_1_expert',
+         'n_experts': 2,
+         'experiment_name': 'cub200_2_expert',
          'model_checkpoint_path': None,
          'evaluate': False}
 
