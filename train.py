@@ -133,7 +133,7 @@ def moe_train(model, dataset):
 
         scheduler_experts.step()
         scheduler_router.step()
-        if epoch % 5 == 0:
+        if epoch % 5 == 0 or epoch > 150:
             acc_test = moe_test(dataset['test_loader'], model)
             model.test_acc.append(acc_test)
             logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
