@@ -23,8 +23,13 @@ def create_experts():
         for e in range(setup['n_experts']):
             experts.append(nets.ResNet18(e))
     if setup['expert_type']=='resnet50':
-        for e in range(setup['n_experts']):
-            experts.append(nets.ResNet50(e))
+        if setup['model_checkpoint_path'] != None:
+            for e in range(setup['n_experts']):
+                expert = torch.load(setup['model_checkpoint_path'], map_location=torch.device('cpu'))
+                experts.append(expert)
+        else:
+            for e in range(setup['n_experts']):
+                experts.append(nets.ResNet50(e))
     if setup['expert_type']=='naive_fc':
         for e in range(setup['n_experts']):
             experts.append(nets.Naive_fc(e,

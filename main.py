@@ -13,8 +13,8 @@ if __name__ == '__main__':
     if not os.path.exists(path):
         os.makedirs(path)
     dataset = datasets.get_dataset()
-    if setup['model_checkpoint_path'] != None:
-        model = torch.load(setup['model_checkpoint_path'], map_location=torch.device('cpu'))
+    if setup['model_eval_path'] != None:
+        model = torch.load(setup['model_eval_path'], map_location=torch.device('cpu'))
         if setup['evaluate'] == True:
             dominant_dict = plots.experts_areas(model, dataset['test_loader'])
             points_df = plots.plot_data_latent(model.expert1, dataset['test_loader'])

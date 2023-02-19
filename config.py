@@ -44,7 +44,8 @@ setup = {'n_epochs': 100,
          'dataset_name': 'cub200',
          'n_experts': 2,
          'experiment_name': 'cub200_2_expert',
-         'model_checkpoint_path': None,
+         'model_checkpoint_path': '/Users/galblecher/Desktop/Thesis_out/cub200/cub200/model.pkl',
+         'model_eval_path': None,
          'evaluate': False}
 
 
