@@ -13,9 +13,9 @@ def objective(trial):
     curr_dt = datetime.now()
     timestamp = int(round(curr_dt.timestamp()))
     setup['experiment_name'] = 'resner18_4_experts' + str(timestamp)
-    setup['kl_coeff'] = 1 / trial.suggest_int('expert_coeff', 1, 20)
+    setup['kl_coeff'] = 1 / trial.suggest_int('kl_coeff', 1, 20)
     setup['lr'] = float(trial.suggest_categorical('lr', ['0.1', '0.05', '0.025', '0.01']))
-    setup['experts_coeff'] = trial.suggest_int('expert_coeff', 0, 5)
+    setup['experts_coeff'] = trial.suggest_int('experts_coeff', 0, 5)
     setup['experts_coeff'] = 10 ** (-setup['experts_coeff'])
     setup['n_epochs'] = 250
     setup['router_lr'] = setup['lr']
