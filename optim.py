@@ -12,14 +12,16 @@ import os
 def objective(trial):
     curr_dt = datetime.now()
     timestamp = int(round(curr_dt.timestamp()))
-    setup['experiment_name'] = 'test_naive_2_experts_' + str(timestamp)
+    setup['experiment_name'] = 'resner18_4_experts' + str(timestamp)
     setup['kl_coeff'] = 1 / trial.suggest_int('expert_coeff', 1, 20)
     setup['lr'] = float(trial.suggest_categorical('lr', ['0.1', '0.05', '0.025', '0.01']))
+    setup['experts_coeff'] = trial.suggest_int('expert_coeff', 0, 5)
+    setup['experts_coeff'] = 10 ** (-setup['experts_coeff'])
     setup['n_epochs'] = 250
     setup['router_lr'] = setup['lr']
     setup['expert_type'] = 'resnet18'
     setup['dataset_name'] = 'cifar10'
-    setup['n_experts'] = 2
+    setup['n_experts'] = 4
 
     path = './models/' + setup['experiment_name']
     if not os.path.exists(path):

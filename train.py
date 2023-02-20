@@ -116,7 +116,7 @@ def moe_train(model, dataset):
             net_loss = criterion(outputs, targets)
             experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
             kl_loss = kl_divergence(att_weights.sum(0))
-            loss = net_loss + experts_loss_ + setup['kl_coeff'] * kl_loss
+            loss = net_loss + setup['experts_coeff'] * experts_loss_ + setup['kl_coeff'] * kl_loss
 
             loss.backward()
             optimizer_experts.step()
