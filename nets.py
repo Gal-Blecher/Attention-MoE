@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from config import train_config, setup
 
 
 
@@ -156,7 +157,7 @@ class VGG(nn.Module):
         super(VGG, self).__init__()
         torch.manual_seed(e)
         self.features = self._make_layers(cfg[vgg_name])
-        self.classifier = nn.Linear(512, 10)
+        self.classifier = nn.Linear(512, train_config['dataset'][setup['dataset_name']]['n_classes'])
 
     def forward(self, x):
         out = self.features(x)

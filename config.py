@@ -11,6 +11,11 @@ train_config = {
             'input_dim': None,
             'batch_size': 20
         },
+        'cifar100': {
+            'n_classes': 100,
+            'input_dim': None,
+            'batch_size': 128
+        },
         'mnist': {
             'n_classes': 10,
             'input_dim': 784,
@@ -41,11 +46,11 @@ setup = {'n_epochs': 100,
          'router_lr': 0.001,
          'kl_coeff': 0.01,
          'experts_coeff': 1.0,
-         'expert_type': 'resnet50',
-         'dataset_name': 'cub200',
+         'expert_type': 'vgg16',
+         'dataset_name': 'cifar100',
          'n_experts': 2,
-         'experiment_name': 'cub200_2_expert',
-         'model_checkpoint_path': '/Users/galblecher/Desktop/Thesis_out/cub200/cub200/model.pkl',
+         'experiment_name': 'test',
+         'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False}
 
