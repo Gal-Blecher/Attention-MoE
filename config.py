@@ -36,20 +36,23 @@ train_config = {
         },
         'resnet50': {
             'emb_dim': 2048
+        },
+        'basiccnn': {
+            'emb_dim': 512
         }
     },
     'device': device.type
 }
 
 setup = {'n_epochs': 100,
-         'lr': 0.001,
-         'router_lr': 0.001,
-         'kl_coeff': 0.01,
+         'lr': 0.1,
+         'router_lr': 0.1,
+         'kl_coeff': 0.1,
          'experts_coeff': 1.0,
-         'expert_type': 'vgg16',
+         'expert_type': 'basiccnn',
          'dataset_name': 'cifar100',
          'n_experts': 2,
-         'experiment_name': 'test',
+         'experiment_name': 'basiccnn_2_experts',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False}

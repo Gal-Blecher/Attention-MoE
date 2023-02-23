@@ -5,6 +5,7 @@ import build
 import train
 import plots
 import os
+from torchsummary import summary
 
 torch.manual_seed(42)
 
@@ -23,6 +24,8 @@ if __name__ == '__main__':
         model = build.build_model()
     if setup['n_experts'] == 1:
         model = model.expert1
+        summary(model, (3, 32, 32))
         train.train_expert(model, dataset)
     else:
+        summary(model, (3, 32, 32))
         train.moe_train(model, dataset)

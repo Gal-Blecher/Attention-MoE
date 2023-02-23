@@ -39,6 +39,9 @@ def create_experts():
     if setup['expert_type']=='vgg16':
         for e in range(setup['n_experts']):
             experts.append(nets.VGG('VGG16', e))
+    if setup['expert_type']=='basiccnn':
+        for e in range(setup['n_experts']):
+            experts.append(nets.BasicCNN(e))
 
     return experts
 
