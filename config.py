@@ -11,6 +11,11 @@ train_config = {
             'input_dim': None,
             'batch_size': 20
         },
+        'rotate_cifar10': {
+            'n_classes': 2,
+            'input_dim': None,
+            'batch_size': 128
+        },
         'cifar100': {
             'n_classes': 100,
             'input_dim': None,
@@ -50,7 +55,7 @@ setup = {'n_epochs': 100,
          'kl_coeff': 0.1,
          'experts_coeff': 1.0,
          'expert_type': 'basiccnn',
-         'dataset_name': 'cifar100',
+         'dataset_name': 'rotate_cifar10',
          'n_experts': 2,
          'experiment_name': 'basiccnn_2_experts',
          'model_checkpoint_path': None,
