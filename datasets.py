@@ -10,6 +10,7 @@ import torchvision.transforms as transforms
 import config
 import utils
 from config import setup
+import random
 
 def get_dataset(dataset_name=None):
     if dataset_name != None:
@@ -98,47 +99,94 @@ def get_dataset(dataset_name=None):
         test_loader = torch.utils.data.DataLoader(test_data, batch_size=config.train_config['dataset']['cub200']['batch_size'], shuffle=False)
 
     if setup['dataset_name'] == 'rotate_cifar10':
-        transform = transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            # transforms.RandomHorizontalFlip(),
+        print('==> Preparing data..')
+
+        def seed_worker(worker_id):
+            worker_seed = torch.initial_seed() % 2 ** 32
+            np.random.seed(worker_seed)
+            random.seed(worker_seed)
+
+        g = torch.Generator()
+        g.manual_seed(0)
+
+        transform_train = transforms.Compose([
+            transforms.CenterCrop(24),
+            transforms.Resize(size=32),
+            transforms.ToTensor(),
+            transforms.GaussianBlur(kernel_size=(3, 7), sigma=(1.1, 2.2)),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+
+        transform_test = transforms.Compose([
+            transforms.CenterCrop(24),
+            transforms.Resize(size=32),
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
 
+        transform_rotate_train = transforms.Compose([
+            torchvision.transforms.RandomRotation((30, 30)),
+            transforms.CenterCrop(24),
+            transforms.Resize(size=32),
+            transforms.ToTensor(),
+            transforms.GaussianBlur(kernel_size=(3, 7), sigma=(1.1, 2.2)),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
 
-        trainset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-        testset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+        transform_rotate_test = transforms.Compose([
+            torchvision.transforms.RandomRotation((30, 30)),
+            transforms.CenterCrop(24),
+            transforms.Resize(size=32),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
 
-        # Create a copy of the dataset with rotated images
-        rotated_trainset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-        rotated_testset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+        # Create trainset
+        trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                                download=True, transform=transform_train)
 
-        # Rotate each image in the original training set by 30 degrees
-        for i, (image, label) in enumerate(trainset):
-            plot_image(image)
-            rotated_image = transforms.functional.rotate(image, 30)
-            rotated_image = rotated_image.permute(1, 2, 0)  # Transpose to (32, 32, 3)
-            rotated_trainset.data[i] = rotated_image
-            rotated_trainset.targets[i] = 1
-        for i, (image, label) in enumerate(testset):
-            rotated_image = transforms.functional.rotate(image, 30)
-            rotated_image = rotated_image.permute(1, 2, 0)  # Transpose to (32, 32, 3)
-            rotated_testset.data[i] = rotated_image
-            rotated_testset.targets[i] = 1
+        # Create cluster and targets
+        trainset.targets = torch.tensor(trainset.targets)
+        trainset.cluster = trainset.targets
+        trainset.targets = torch.zeros_like(trainset.targets)
 
-        # Set the labels for the original images to 0
-        trainset.targets = torch.zeros(len(trainset))
+        # trainset negative examples
+        trainset_flip = torchvision.datasets.CIFAR10(root='./data', train=True,
+                                                     download=True, transform=transform_rotate_train)
+        # Cluster and targets
+        trainset_flip.targets = torch.tensor(trainset_flip.targets)
+        trainset_flip.cluster = trainset_flip.targets
+        trainset_flip.targets = torch.ones_like(trainset_flip.targets)
 
-        # Combine the original and rotated datasets
-        combined_trainset = torch.utils.data.ConcatDataset([trainset, rotated_trainset])
-        combined_testset = torch.utils.data.ConcatDataset([testset, rotated_testset])
+        trainset = torch.utils.data.ConcatDataset([trainset, trainset_flip])
+        train_loader = torch.utils.data.DataLoader(trainset, batch_size=128,
+                                                  shuffle=True, num_workers=2,
+                                                  worker_init_fn=seed_worker, generator=g, )
 
-        # Create data loaders for the combined dataset
-        train_loader = torch.utils.data.DataLoader(combined_trainset, batch_size=128, shuffle=True, num_workers=2)
-        test_loader = torch.utils.data.DataLoader(combined_testset, batch_size=64, shuffle=False, num_workers=2)
-        show_rotated_images(train_loader)
+        # Testset cluster and targets
+        testset = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                               download=True, transform=transform_test)
+        testset.targets = torch.tensor(testset.targets)
+        testset.cluster = testset.targets
+        testset.targets = torch.zeros_like(testset.targets)
 
-    print_data_info(train_loader, test_loader, setup['dataset_name'])
+        # Testset negative
+        testset_flip = torchvision.datasets.CIFAR10(root='./data', train=False,
+                                                    download=True, transform=transform_rotate_test)
+        testset_flip.targets = torch.tensor(testset_flip.targets)
+        testset_flip.cluster = testset_flip.targets
+        testset_flip.targets = torch.ones_like(testset_flip.targets)
+
+        testset = torch.utils.data.ConcatDataset([testset, testset_flip])
+        test_loader = torch.utils.data.DataLoader(testset, batch_size=100,
+                                                 shuffle=True, num_workers=2,
+                                                 worker_init_fn=seed_worker, generator=g, )
+
+        classes = ('plane', 'car', 'bird', 'cat', 'deer',
+                   'dog', 'frog', 'horse', 'ship', 'truck')
+
+
+    # print_data_info(train_loader, test_loader, setup['dataset_name'])
 
     dataset = {'train_loader': train_loader,
                'test_loader': test_loader}
