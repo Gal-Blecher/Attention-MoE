@@ -133,7 +133,7 @@ def moe_train(model, dataset):
 
         scheduler_experts.step()
         scheduler_router.step()
-        if epoch % 5 == 0 or epoch > 150:
+        if epoch % 1 == 0 or epoch > 150:
             acc_test = moe_test(dataset['test_loader'], model)
             model.test_acc.append(acc_test)
             logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
@@ -147,6 +147,11 @@ def moe_train(model, dataset):
                     file.write(json.dumps(train_config))
                 with open(f"{path}/accuracy.txt", "w") as file:
                     file.write(f'{epoch}: {acc_test}')
+            if early_stop(model.test_acc):
+                with open(f'{path}/acc_test.pkl', 'wb') as f:
+                    pickle.dump(model.test_acc, f)
+                return
+
     with open(f'{path}/acc_test.pkl', 'wb') as f:
         pickle.dump(model.test_acc, f)
 
@@ -231,7 +236,7 @@ def experts_loss(labels, att_weights, model):
 def early_stop(acc_test_list):
     curr_epoch = len(acc_test_list)
     best_epoch = acc_test_list.index(max(acc_test_list))
-    if curr_epoch - best_epoch > 50:
+    if curr_epoch - best_epoch > 20:
         return True
     else:
         return False
