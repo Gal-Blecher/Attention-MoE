@@ -44,6 +44,9 @@ train_config = {
         },
         'basiccnn': {
             'emb_dim': 512
+        },
+        'mobilenet': {
+            'emb_dim': 512
         }
     },
     'device': device.type
@@ -54,10 +57,10 @@ setup = {'n_epochs': 100,
          'router_lr': 0.1,
          'kl_coeff': 0.1,
          'experts_coeff': 1.0,
-         'expert_type': 'resnet18',
+         'expert_type': 'mobilenet',
          'dataset_name': 'rotate_cifar10',
-         'n_experts': 2,
-         'experiment_name': 'resnet18_1_expert_cifar10rotate',
+         'n_experts': 1,
+         'experiment_name': 'mobilenet_1_expert_cifar10rotate',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False}

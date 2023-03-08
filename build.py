@@ -16,7 +16,6 @@ def build_model():
     model = MoE(experts, router)
     return model
 
-
 def create_experts():
     experts = []
     if setup['expert_type']=='resnet18':
@@ -42,6 +41,9 @@ def create_experts():
     if setup['expert_type']=='basiccnn':
         for e in range(setup['n_experts']):
             experts.append(nets.BasicCNN(e))
+    if setup['expert_type']=='mobilenet':
+        for e in range(setup['n_experts']):
+            experts.append(nets.MobileNetV2(e))
 
     return experts
 

@@ -101,13 +101,13 @@ def get_dataset(dataset_name=None):
     if setup['dataset_name'] == 'rotate_cifar10':
         print('==> Preparing data..')
 
-        def seed_worker(worker_id):
-            worker_seed = torch.initial_seed() % 2 ** 32
-            np.random.seed(worker_seed)
-            random.seed(worker_seed)
-
-        g = torch.Generator()
-        g.manual_seed(0)
+        # def seed_worker(worker_id):
+        #     worker_seed = torch.initial_seed() % 2 ** 32
+        #     np.random.seed(worker_seed)
+        #     random.seed(worker_seed)
+        #
+        # g = torch.Generator()
+        # g.manual_seed(0)
 
         transform_train = transforms.Compose([
             transforms.CenterCrop(24),
@@ -160,8 +160,7 @@ def get_dataset(dataset_name=None):
 
         trainset = torch.utils.data.ConcatDataset([trainset, trainset_flip])
         train_loader = torch.utils.data.DataLoader(trainset, batch_size=128,
-                                                  shuffle=True, num_workers=2,
-                                                  worker_init_fn=seed_worker, generator=g, )
+                                                  shuffle=True, num_workers=2)
 
         # Testset cluster and targets
         testset = torchvision.datasets.CIFAR10(root='./data', train=False,
@@ -179,8 +178,7 @@ def get_dataset(dataset_name=None):
 
         testset = torch.utils.data.ConcatDataset([testset, testset_flip])
         test_loader = torch.utils.data.DataLoader(testset, batch_size=100,
-                                                 shuffle=True, num_workers=2,
-                                                 worker_init_fn=seed_worker, generator=g, )
+                                                 shuffle=True, num_workers=2)
 
         classes = ('plane', 'car', 'bird', 'cat', 'deer',
                    'dog', 'frog', 'horse', 'ship', 'truck')
