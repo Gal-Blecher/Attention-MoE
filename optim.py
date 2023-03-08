@@ -12,14 +12,14 @@ import os
 def objective(trial):
     curr_dt = datetime.now()
     timestamp = int(round(curr_dt.timestamp()))
-    setup['experiment_name'] = 'rotate_resner18_4_experts' + str(timestamp)
+    setup['experiment_name'] = 'rotate_mobilenet_4_experts' + str(timestamp)
     setup['kl_coeff'] = 1 / trial.suggest_int('kl_coeff', 1, 20)
-    setup['lr'] = float(trial.suggest_categorical('lr', ['0.01', '0.005', '0.0025', '0.0001', '0.00005']))
+    setup['lr'] = float(trial.suggest_categorical('lr', ['0.001', '0.0001', '0.00005']))
     setup['experts_coeff'] = trial.suggest_int('experts_coeff', 0, 5)
     setup['experts_coeff'] = 10 ** (-setup['experts_coeff'])
     setup['n_epochs'] = 200
     setup['router_lr'] = setup['lr']
-    setup['expert_type'] = 'resnet18'
+    setup['expert_type'] = 'mobilenet'
     setup['dataset_name'] = 'rotate_cifar10'
     setup['n_experts'] = 4
 

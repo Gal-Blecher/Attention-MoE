@@ -50,7 +50,7 @@ def train_expert(model, dataset):
         scheduler.step()
         acc_train = round((correct/total)*100, 2)
         print(f'epoch: {epoch}, train accuracy: {acc_train}')
-        if epoch % 5 == 0:
+        if epoch % 1 == 0:
             acc_test, test_loss = test(dataset['test_loader'], model)
             train_acc.append(acc_train)
             test_acc.append(acc_test)
@@ -236,7 +236,7 @@ def experts_loss(labels, att_weights, model):
 def early_stop(acc_test_list):
     curr_epoch = len(acc_test_list)
     best_epoch = acc_test_list.index(max(acc_test_list))
-    if curr_epoch - best_epoch > 20:
+    if curr_epoch - best_epoch > 5:
         return True
     else:
         return False
