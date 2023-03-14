@@ -46,7 +46,7 @@ train_config = {
             'emb_dim': 512
         },
         'mobilenet': {
-            'emb_dim': 512
+            'emb_dim': 1280
         }
     },
     'device': device.type
