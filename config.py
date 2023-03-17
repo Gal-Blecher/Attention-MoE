@@ -53,14 +53,14 @@ train_config = {
 }
 
 setup = {'n_epochs': 100,
-         'lr': 0.1,
-         'router_lr': 0.1,
-         'kl_coeff': 0.1,
+         'lr': 0.01,
+         'router_lr': 0.01,
+         'kl_coeff': 0.01,
          'experts_coeff': 1.0,
-         'expert_type': 'mobilenet',
-         'dataset_name': 'rotate_cifar10',
+         'expert_type': 'naive_fc',
+         'dataset_name': 'mnist',
          'n_experts': 1,
-         'experiment_name': 'mobilenet_1_expert_cifar10rotate',
+         'experiment_name': 'mnist_1_expert',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False}
