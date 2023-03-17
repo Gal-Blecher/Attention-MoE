@@ -70,8 +70,8 @@ def get_dataset(dataset_name=None):
         print(f'==> Preparing data MNIST')
         train_dataset = MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_dataset = MNIST(root='./data', train=False, transform=transforms.ToTensor())
-        train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-        test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+        train_loader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=128, shuffle=True)
+        test_loader = torch.utils.data.DataLoader(dataset=test_dataset, batch_size=128, shuffle=False)
 
     if setup['dataset_name'] == 'cub200':
         print(f'==> Preparing data CUB200')

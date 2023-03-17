@@ -33,6 +33,9 @@ train_config = {
         }
     },
     'nets': {
+        'naive_fc': {
+            'emb_dim': 2
+        },
         'resnet18': {
             'emb_dim': 512
         },
