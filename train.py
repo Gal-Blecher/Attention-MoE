@@ -236,7 +236,7 @@ def experts_loss(labels, att_weights, model):
 def early_stop(acc_test_list):
     curr_epoch = len(acc_test_list)
     best_epoch = acc_test_list.index(max(acc_test_list))
-    if curr_epoch - best_epoch > 100:
+    if curr_epoch - best_epoch > 300:
         return True
     else:
         return False
