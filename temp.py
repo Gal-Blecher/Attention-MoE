@@ -7,6 +7,7 @@ import numpy as np
 import torch.nn.functional as F
 import random
 from torch.utils.data import DataLoader, SubsetRandomSampler
+import nets
 
 
 def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
@@ -23,14 +24,12 @@ def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
             indices = unlabeled_trainloader.sampler.indices
 
             # use the inputs, labels, scores, and predictions as needed
-
-
             for i in range(inputs.size(0)):
                 if scores[i] >= th:
                     labeled_trainloader.sampler.indices.append(batch_indices[i])
                     rm_lst.append(batch_indices[i])
-    unlabeled_trainloader.sampler.indices = [set(unlabeled_trainloader.sampler.indices) - set(rm_lst)]
-
+    # unlabeled_trainloader.sampler.indices = [set(unlabeled_trainloader.sampler.indices) - set(rm_lst)]
+    unlabeled_trainloader.sampler.indices = list(set(unlabeled_trainloader.sampler.indices) - set(rm_lst))
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -50,24 +49,9 @@ labeled_indexes = random.sample(range(trainset_full.data.shape[0]), 1000)
 unlabeled_indexes = list(set(range(len(trainset_full))) - set(labeled_indexes))
 
 
-class SimpleModel(nn.Module):
-    def __init__(self):
-        super(SimpleModel, self).__init__()
-        self.conv1 = nn.Conv2d(3, 16, 3, padding=1)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(16, 32, 3, padding=1)
-        self.fc1 = nn.Linear(32 * 8 * 8, 256)
-        self.fc2 = nn.Linear(256, 10)
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 32 * 8 * 8)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
 
-model = SimpleModel()
+model = nets.SimpleModel()
 optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 criterion = nn.CrossEntropyLoss()
 

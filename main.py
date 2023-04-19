@@ -5,6 +5,7 @@ import build
 import train
 import plots
 import os
+import self_supervised
 # from torchsummary import summary
 
 torch.manual_seed(42)
@@ -26,6 +27,8 @@ if __name__ == '__main__':
         model = model.expert1
         # summary(model, (3, 32, 32))
         train.train_expert(model, dataset)
+    elif setup['ssl']:
+        self_supervised.fit(dataset, model)
     else:
         # summary(model, (3, 32, 32))
         train.moe_train(model, dataset)

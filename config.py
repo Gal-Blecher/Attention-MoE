@@ -60,13 +60,15 @@ setup = {'n_epochs': 100,
          'router_lr': 0.01,
          'kl_coeff': 0.01,
          'experts_coeff': 1.0,
-         'expert_type': 'naive_fc',
-         'dataset_name': 'mnist',
-         'n_experts': 4,
-         'experiment_name': 'mnist_1_expert',
+         'expert_type': 'resnet18',
+         'dataset_name': 'cifar10',
+         'n_experts': 2,
+         'experiment_name': 'ssl_2_experts',
          'model_checkpoint_path': None,
          'model_eval_path': None,
-         'evaluate': False}
+         'evaluate': False,
+         'ssl': 1000
+         }
 
 
 # with open('configuration.yaml', 'w') as f:
