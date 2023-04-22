@@ -104,6 +104,8 @@ def moe_train(model, dataset):
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
     model.test_acc = []
     for epoch in range(setup['n_epochs']):
+        n_labeled = len(dataset['train_loader'].sampler.indices)
+        logger.info(f'labeled_data: {n_labeled}')
         model.train()
         running_loss = 0
         correct = 0
