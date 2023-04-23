@@ -4,7 +4,6 @@ import random
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from config import setup
 import train
-from utils import get_logger
 
 def initial_split(train_loader):
     labeled_indexes = random.sample(range(train_loader.dataset.data.shape[0]), setup['ssl'])
