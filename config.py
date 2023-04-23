@@ -55,9 +55,9 @@ train_config = {
     'device': device.type
 }
 
-setup = {'n_epochs': 100,
-         'lr': 0.01,
-         'router_lr': 0.01,
+setup = {'n_epochs': 200,
+         'lr': 0.1,
+         'router_lr': 0.1,
          'kl_coeff': 0.01,
          'experts_coeff': 1.0,
          'expert_type': 'resnet18',
@@ -67,7 +67,8 @@ setup = {'n_epochs': 100,
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
-         'ssl': 1000
+         'ssl': 1000,
+         'ssl_lr': 0.01
          }
 
 
