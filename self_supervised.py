@@ -1,15 +1,10 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision
-import torchvision.transforms as transforms
-import numpy as np
 import torch.nn.functional as F
 import random
 from torch.utils.data import DataLoader, SubsetRandomSampler
-import nets
 from config import setup
 import train
+from utils import get_logger
 
 def initial_split(train_loader):
     labeled_indexes = random.sample(range(train_loader.dataset.data.shape[0]), setup['ssl'])
@@ -39,8 +34,10 @@ def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
     model.train()
 
 def fit(dataset, model):
+    logger = get_logger(setup['experiment_name'])
     labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
     while len(unlabeled_indexes) != 0:
+        logger.info(f'labeled samples: {len(unlabeled_indexes)}')
         labeled_sampler = SubsetRandomSampler(labeled_indexes)
         labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64, sampler=labeled_sampler)
 
@@ -51,13 +48,13 @@ def fit(dataset, model):
             'train_loader': labeled_trainloader,
             'test_loader': dataset['test_loader']
         }
-        setup['n_epochs'] = 1
-        train.moe_train(model, dataset_ssl)
+        train.moe_ssl_train(model, dataset_ssl)
 
         label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.3)
         labeled_indexes = labeled_trainloader.sampler.indices
         unlabeled_indexes = unlabeled_trainloader.sampler.indices
-        pass
+    return model, labeled_trainloader
+
 
 # initial_split(train_loader=data['train_loader'])
 # train

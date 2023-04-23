@@ -274,3 +274,37 @@ def get_experts_params_list(model):
                           model.expert13.parameters(), model.expert14.parameters(),
                           model.expert15.parameters(), model.expert16.parameters()]
         return experts_params
+
+def moe_ssl_train(model, dataset):
+    logger = get_logger(setup['experiment_name'])
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if device == 'cuda':
+        model = torch.nn.DataParallel(model)
+        cudnn.benchmark = True
+    model = model.to(device)
+    logger.info(f'training with device: {device}')
+    router_params = model.router.parameters()
+    experts_params = get_experts_params_list(model)
+    criterion = nn.CrossEntropyLoss()
+    optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=setup['ssl_lr'],
+                          momentum=0.9, weight_decay=5e-4)
+    optimizer_router = optim.SGD(router_params, lr=setup['ssl_lr'],
+                          momentum=0.9, weight_decay=5e-4)
+    model.test_acc = []
+    for epoch in range(1):
+        # n_labeled = len(dataset['train_loader'].sampler.indices)
+        # logger.info(f'labeled_data: {n_labeled}')
+        model.train()
+        for batch_idx, (inputs, targets) in enumerate(dataset['train_loader']):
+            inputs, targets = inputs.to(device), targets.to(device)
+            optimizer_experts.zero_grad()
+            optimizer_router.zero_grad()
+            outputs, att_weights = model(inputs)
+            net_loss = criterion(outputs, targets)
+            experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
+            kl_loss = kl_divergence(att_weights.sum(0))
+            loss = net_loss + setup['experts_coeff'] * experts_loss_ + setup['kl_coeff'] * kl_loss
+
+            loss.backward()
+            optimizer_experts.step()
+            optimizer_router.step()
