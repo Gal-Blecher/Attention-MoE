@@ -58,7 +58,7 @@ train_config = {
 setup = {'n_epochs': 200,
          'lr': 0.1,
          'router_lr': 0.1,
-         'kl_coeff': 0.01,
+         'kl_coeff': 0.05,
          'experts_coeff': 1.0,
          'expert_type': 'resnet18',
          'dataset_name': 'cifar10',
