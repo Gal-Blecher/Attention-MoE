@@ -37,7 +37,7 @@ def fit(dataset, model):
     logger = get_logger(setup['experiment_name'])
     labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
     while len(unlabeled_indexes) != 0:
-        logger.info(f'labeled samples: {len(unlabeled_indexes)}')
+        logger.info(f'unlabeled samples: {len(unlabeled_indexes)}')
         labeled_sampler = SubsetRandomSampler(labeled_indexes)
         labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64, sampler=labeled_sampler)
 
