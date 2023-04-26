@@ -274,13 +274,13 @@ def get_experts_params_list(model):
         return experts_params
 
 def moe_ssl_train(model, dataset):
-    logger = get_logger(setup['experiment_name'])
+    # logger = get_logger(setup['experiment_name'])
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if device == 'cuda':
         model = torch.nn.DataParallel(model)
         cudnn.benchmark = True
     model = model.to(device)
-    logger.info(f'training with device: {device}')
+    # logger.info(f'training with device: {device}')
     router_params = model.router.parameters()
     experts_params = get_experts_params_list(model)
     criterion = nn.CrossEntropyLoss()
