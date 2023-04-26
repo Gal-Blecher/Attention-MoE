@@ -53,10 +53,6 @@ def fit(dataset, model):
         label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.3)
         labeled_indexes = labeled_trainloader.sampler.indices
         unlabeled_indexes = unlabeled_trainloader.sampler.indices
+        return model, labeled_trainloader
     return model, labeled_trainloader
-
-
-# initial_split(train_loader=data['train_loader'])
-# train
-# update loaders
 
