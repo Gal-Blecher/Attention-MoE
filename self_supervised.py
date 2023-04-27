@@ -54,5 +54,11 @@ def fit(dataset, model):
         label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
         labeled_indexes = labeled_trainloader.sampler.indices
         unlabeled_indexes = unlabeled_trainloader.sampler.indices
+
+    print(f'unlabeled samples: {len(unlabeled_indexes)}')
+    labeled_sampler = SubsetRandomSampler(labeled_indexes)
+    labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64,
+                                                      sampler=labeled_sampler)
+    dataset['train_loader'] = labeled_trainloader
     return model, labeled_trainloader
 
