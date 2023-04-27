@@ -44,9 +44,10 @@ def fit(dataset, model):
     while True:
         print(f'unlabeled samples: {len(unlabeled_indexes)}')
 
-
         unlabeled_sampler = SubsetRandomSampler(unlabeled_indexes)
         unlabeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64, sampler=unlabeled_sampler, shuffle=False)
+        length = len(unlabeled_trainloader.dataset.targets)
+        unlabeled_trainloader.dataset.targets = [0] * length
 
         dataset_ssl = {
             'train_loader': labeled_trainloader,
@@ -63,5 +64,18 @@ def fit(dataset, model):
     print(f'unlabeled samples: {len(unlabeled_indexes)}')
     print(f'ssl labels: {labeled_trainloader.dataset.targets[:100]}')
     print(f'GT labels: {orig_labels[:100]}')
+    calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
     return model, labeled_trainloader
+
+def calculate_accuracy(list1, list2):
+    """
+    Takes two lists of integers and returns the accuracy of similar elements between the two lists.
+    """
+    count = 0
+    total = len(list1)
+    for i in range(total):
+        if list1[i] == list2[i]:
+            count += 1
+    accuracy = count / total
+    print(accuracy)
 
