@@ -54,6 +54,5 @@ def fit(dataset, model):
         label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
         labeled_indexes = labeled_trainloader.sampler.indices
         unlabeled_indexes = unlabeled_trainloader.sampler.indices
-        return model, labeled_trainloader
     return model, labeled_trainloader
 
