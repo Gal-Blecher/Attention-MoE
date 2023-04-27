@@ -37,11 +37,13 @@ def fit(dataset, model):
     # logger = get_logger(setup['experiment_name'])
     labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
     orig_labels = dataset['train_loader'].dataset.targets
+
+    labeled_sampler = SubsetRandomSampler(labeled_indexes)
+    labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64,
+                                                      sampler=labeled_sampler)
     while True:
-        # logger.info(f'unlabeled samples: {len(unlabeled_indexes)}')
         print(f'unlabeled samples: {len(unlabeled_indexes)}')
-        labeled_sampler = SubsetRandomSampler(labeled_indexes)
-        labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64, sampler=labeled_sampler)
+
 
         unlabeled_sampler = SubsetRandomSampler(unlabeled_indexes)
         unlabeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64, sampler=unlabeled_sampler, shuffle=False)
@@ -53,7 +55,6 @@ def fit(dataset, model):
         train.moe_ssl_train(model, dataset_ssl)
 
         label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
-        labeled_indexes = labeled_trainloader.sampler.indices
         unlabeled_indexes = unlabeled_trainloader.sampler.indices
         dataset['train_loader'] = labeled_trainloader
         if len(unlabeled_indexes) == 0:
