@@ -28,6 +28,7 @@ def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
                 if scores[i] >= th:
                     labeled_trainloader.sampler.indices.append(batch_indices[i])
                     rm_lst.append(batch_indices[i])
+                    labeled_trainloader.dataset.targets[i] = int(predictions[i])
     # unlabeled_trainloader.sampler.indices = [set(unlabeled_trainloader.sampler.indices) - set(rm_lst)]
     unlabeled_trainloader.sampler.indices = list(set(unlabeled_trainloader.sampler.indices) - set(rm_lst))
     model.train()
@@ -50,7 +51,7 @@ def fit(dataset, model):
         }
         train.moe_ssl_train(model, dataset_ssl)
 
-        label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.3)
+        label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
         labeled_indexes = labeled_trainloader.sampler.indices
         unlabeled_indexes = unlabeled_trainloader.sampler.indices
         return model, labeled_trainloader
