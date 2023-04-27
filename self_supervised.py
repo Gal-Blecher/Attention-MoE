@@ -61,7 +61,7 @@ def fit(dataset, model):
     labeled_sampler = SubsetRandomSampler(labeled_indexes)
     labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64,
                                                       sampler=labeled_sampler)
-    print(f'ssl labels: {labeled_trainloader.dataset.targets}')
-    print(f'GT labels: {orig_labels}')
+    print(f'ssl labels: {labeled_trainloader.dataset.targets[:100]}')
+    print(f'GT labels: {orig_labels[:100]}')
     return model, labeled_trainloader
 
