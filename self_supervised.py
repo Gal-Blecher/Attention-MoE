@@ -15,10 +15,10 @@ def initial_split(train_loader):
 def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
-    labeled_data = labeled_trainloader.dataset.tensors[0]
-    labeled_labels = labeled_trainloader.dataset.tensors[1]
+    labeled_data = labeled_trainloader.dataset.tensors[0].to(device)
+    labeled_labels = labeled_trainloader.dataset.tensors[1].to(device)
     unlabeled_dataset = unlabeled_trainloader.dataset
-    unlabled_data = torch.tensor([])
+    unlabled_data = torch.tensor([]).to(device)
     with torch.no_grad():
         for i, input in enumerate(unlabeled_dataset):
             input = input[0].to(device)
