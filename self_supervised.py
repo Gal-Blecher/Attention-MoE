@@ -96,7 +96,7 @@ def fit(dataset, model):
             break
 
     print(f'unlabeled samples: {unlabeled_samples}')
-    print(f'ssl labels: {labeled_trainloader.dataset.targets[:100]}')
+    print(f'ssl labels: {labeled_trainloader.dataset.tensors[1][:100]}')
     print(f'GT labels: {orig_labels[:100]}')
     # calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
     return model, labeled_trainloader
