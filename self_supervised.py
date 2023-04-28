@@ -90,7 +90,8 @@ def fit(dataset, model):
             'train_loader': labeled_trainloader,
             'test_loader': dataset['test_loader']
         }
-        train.moe_ssl_train(model, dataset_ssl)
+        for i in range(5):
+            train.moe_ssl_train(model, dataset_ssl)
         labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
         if unlabeled_trainloader == None:
             break
