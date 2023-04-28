@@ -35,8 +35,11 @@ def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
 
     labeled_dataset = TensorDataset(labeled_data, labeled_labels)
     labeled_trainloader = DataLoader(labeled_dataset, batch_size=64, shuffle=True)
-    unlabeled_dataset = TensorDataset(unlabled_data)
-    unlabeled_trainloader = DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
+    if unlabled_data.data.shape[0] == 0:
+        unlabeled_trainloader = None
+    else:
+        unlabeled_dataset = TensorDataset(unlabled_data)
+        unlabeled_trainloader = DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
     model.train()
     return labeled_trainloader, unlabeled_trainloader
 
@@ -89,8 +92,7 @@ def fit(dataset, model):
         }
         train.moe_ssl_train(model, dataset_ssl)
         labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
-        unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
-        if unlabeled_samples == 0:
+        if unlabeled_trainloader == None:
             break
 
     print(f'unlabeled samples: {unlabeled_samples}')
