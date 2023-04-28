@@ -82,7 +82,7 @@ def fit(dataset, model):
     # train ssl
     while True:
         unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
-        print(f'unlabeled samples: {len(unlabeled_samples)}')
+        print(f'unlabeled samples: {unlabeled_samples}')
         dataset_ssl = {
             'train_loader': labeled_trainloader,
             'test_loader': dataset['test_loader']
@@ -90,10 +90,10 @@ def fit(dataset, model):
         train.moe_ssl_train(model, dataset_ssl)
         labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
         unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
-        if len(unlabeled_samples) == 0:
+        if unlabeled_samples == 0:
             break
 
-    print(f'unlabeled samples: {len(unlabeled_samples)}')
+    print(f'unlabeled samples: {unlabeled_samples}')
     print(f'ssl labels: {labeled_trainloader.dataset.targets[:100]}')
     print(f'GT labels: {orig_labels[:100]}')
     # calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
