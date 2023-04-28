@@ -4,73 +4,43 @@ import random
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from config import setup
 import train
+from torch.utils.data import TensorDataset
+import numpy as np
 
 def initial_split(train_loader):
     labeled_indexes = random.sample(range(train_loader.dataset.data.shape[0]), setup['ssl'])
-    # Select the remaining 49000 unlabeled examples
     unlabeled_indexes = list(set(range(train_loader.dataset.data.shape[0])) - set(labeled_indexes))
     return labeled_indexes, unlabeled_indexes
 
 def label_samples(model, unlabeled_trainloader, labeled_trainloader, th=0.5):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.eval()
-    rm_lst = []
+    labeled_data = labeled_trainloader.dataset.tensors[0]
+    labeled_labels = labeled_trainloader.dataset.tensors[1]
+    unlabeled_dataset = unlabeled_trainloader.dataset
+    unlabled_data = torch.tensor([])
     with torch.no_grad():
-        for batch_idx, (inputs, target) in enumerate(unlabeled_trainloader):
-            batch_indices = unlabeled_trainloader.sampler.indices[batch_idx * unlabeled_trainloader.batch_size: (batch_idx + 1) * unlabeled_trainloader.batch_size]
-            inputs = inputs.to(device)
-            outputs = model(inputs)[0]
-            outputs = F.softmax(outputs, 1)
-            scores, predictions = torch.max(outputs, dim=1)
+        for i, input in enumerate(unlabeled_dataset):
+            input = input[0].to(device)
+            input = input.unsqueeze(0)
+            output = model(input)[0]
+            output = F.softmax(output, 1)
+            score, prediction = torch.max(output, dim=1)
 
-            # use the inputs, labels, scores, and predictions as needed
-            for i in range(inputs.size(0)):
-                if scores[i] >= th:
-                    labeled_trainloader.sampler.indices.append(batch_indices[i])
-                    rm_lst.append(batch_indices[i])
-                    labeled_trainloader.dataset.targets[i] = int(predictions[i])
-    # unlabeled_trainloader.sampler.indices = [set(unlabeled_trainloader.sampler.indices) - set(rm_lst)]
-    unlabeled_trainloader.sampler.indices = list(set(unlabeled_trainloader.sampler.indices) - set(rm_lst))
+            if score >= th:
+                labeled_data = torch.cat([labeled_data, input], dim=0)
+                labeled_labels = torch.cat([labeled_labels, prediction], dim=0)
+            else:
+                unlabled_data = torch.cat([unlabled_data, input])
+
+    labeled_dataset = TensorDataset(labeled_data, labeled_labels)
+    labeled_trainloader = DataLoader(labeled_dataset, batch_size=64, shuffle=True)
+    unlabeled_dataset = TensorDataset(unlabled_data)
+    unlabeled_trainloader = DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
     model.train()
-
-def fit(dataset, model):
-    # logger = get_logger(setup['experiment_name'])
-    labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
-    orig_labels = dataset['train_loader'].dataset.targets
-
-    labeled_sampler = SubsetRandomSampler(labeled_indexes)
-    labeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64,
-                                                      sampler=labeled_sampler)
-    while True:
-        print(f'unlabeled samples: {len(unlabeled_indexes)}')
-
-        unlabeled_sampler = SubsetRandomSampler(unlabeled_indexes)
-        unlabeled_trainloader = torch.utils.data.DataLoader(dataset['train_loader'].dataset, batch_size=64, sampler=unlabeled_sampler, shuffle=False)
-        length = len(unlabeled_trainloader.dataset.targets)
-        unlabeled_trainloader.dataset.targets = [0] * length
-
-        dataset_ssl = {
-            'train_loader': labeled_trainloader,
-            'test_loader': dataset['test_loader']
-        }
-        train.moe_ssl_train(model, dataset_ssl)
-
-        label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
-        unlabeled_indexes = unlabeled_trainloader.sampler.indices
-        dataset['train_loader'] = labeled_trainloader
-        if len(unlabeled_indexes) == 0:
-            break
-
-    print(f'unlabeled samples: {len(unlabeled_indexes)}')
-    print(f'ssl labels: {labeled_trainloader.dataset.targets[:100]}')
-    print(f'GT labels: {orig_labels[:100]}')
-    calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
-    return model, labeled_trainloader
+    return labeled_trainloader, unlabeled_trainloader
 
 def calculate_accuracy(list1, list2):
-    """
-    Takes two lists of integers and returns the accuracy of similar elements between the two lists.
-    """
     count = 0
     total = len(list1)
     for i in range(total):
@@ -79,3 +49,52 @@ def calculate_accuracy(list1, list2):
     accuracy = count / total
     print(accuracy)
 
+
+def fit(dataset, model):
+    labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
+    orig_labels = dataset['train_loader'].dataset.targets
+
+    # create labeled trainloader
+    images = []
+    labels = []
+    for i in labeled_indexes:
+        img, label = dataset['train_loader'].dataset[i]
+        images.append(img)
+        labels.append(label)
+
+    images_tensor = torch.stack(images)
+    labels_tensor = torch.tensor(labels)
+
+    labeled_dataset = TensorDataset(images_tensor, labels_tensor)
+    labeled_trainloader = DataLoader(labeled_dataset, batch_size=64, shuffle=True)
+
+    # create unlabeled trainloader
+    images = []
+    for i in unlabeled_indexes:
+        img, label = dataset['train_loader'].dataset[i]
+        images.append(img)
+
+    images_tensor = torch.stack(images)
+
+    unlabeled_dataset = torch.utils.data.TensorDataset(images_tensor)
+    unlabeled_trainloader = torch.utils.data.DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
+
+    # train ssl
+    while True:
+        unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
+        print(f'unlabeled samples: {len(unlabeled_samples)}')
+        dataset_ssl = {
+            'train_loader': labeled_trainloader,
+            'test_loader': dataset['test_loader']
+        }
+        train.moe_ssl_train(model, dataset_ssl)
+        labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
+        unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
+        if len(unlabeled_samples) == 0:
+            break
+
+    print(f'unlabeled samples: {len(unlabeled_samples)}')
+    print(f'ssl labels: {labeled_trainloader.dataset.targets[:100]}')
+    print(f'GT labels: {orig_labels[:100]}')
+    # calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
+    return model, labeled_trainloader

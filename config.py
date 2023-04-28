@@ -63,11 +63,11 @@ setup = {'n_epochs': 200,
          'expert_type': 'resnet18',
          'dataset_name': 'cifar10',
          'n_experts': 2,
-         'experiment_name': 'ssl_2_experts_1000_labels_2',
+         'experiment_name': 'ssl_2_experts_1000_labels_20',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
-         'ssl': 1000,
+         'ssl': 1_000,
          'ssl_lr': 0.01,
          'ssl_th': 0.3
          }

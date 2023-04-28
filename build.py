@@ -76,7 +76,10 @@ class MoE(nn.Module):
     def forward(self, x):
         experts_out_list, z_list = self.get_experts_out_and_z_lists(x)
         z = torch.stack(z_list, dim=0)
-        att_weights = self.router(z, z, z).permute(1,0,2)
+        if x.shape[0] == 1:
+            att_weights = self.router(z, z, z).unsqueeze(0)
+        else:
+            att_weights = self.router(z, z, z).permute(1,0,2)
         experts_out_ = torch.stack(experts_out_list, dim=0).permute(1, 2, 0)
         out = torch.bmm(experts_out_, att_weights)
 
