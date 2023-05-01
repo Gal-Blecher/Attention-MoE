@@ -55,21 +55,22 @@ train_config = {
     'device': device.type
 }
 
-setup = {'n_epochs': 200,
-         'lr': 0.1,
-         'router_lr': 0.1,
-         'kl_coeff': 0.05,
+setup = {'n_epochs': 50,
+         'lr': 0.001,
+         'router_lr': 0.001,
+         'kl_coeff': 0.001,
          'experts_coeff': 1.0,
          'expert_type': 'resnet18',
          'dataset_name': 'cifar10',
          'n_experts': 2,
-         'experiment_name': 'ssl_2_experts_1000_labels_22',
+         'experiment_name': 'ssl_2_experts_1000_labels_27',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
          'ssl': 1_000,
-         'ssl_lr': 0.01,
-         'ssl_th': 0.7
+         'ssl_lr': 0.0001,
+         'ssl_th': 0.7,
+         'label_every': 1
          }
 
 
