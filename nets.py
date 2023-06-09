@@ -16,6 +16,7 @@ class Naive_fc(nn.Module):
         self.fc2 = nn.Linear(int(input_dim/2), latent_dim)
         self.fc3 = nn.Linear(latent_dim, n_classes)
         self.z_dim = latent_dim
+        self.fc4 = nn.Linear(latent_dim, int(input_dim/2))
 
     def forward(self, x):
         x = x.flatten(start_dim=1)
@@ -373,3 +374,77 @@ class SimpleModel(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+
+
+class VIB(nn.Module):
+    def __init__(self, seed, input_dim, n_classes, latent_dim):
+        super(VIB, self).__init__()
+        torch.manual_seed(seed=seed)
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim, int(input_dim/2)),
+            nn.ReLU(),
+            nn.Linear(int(input_dim/2), latent_dim * 2)  # Two times the latent_dim for mean and log-variance
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(latent_dim, int(input_dim/2)),
+            nn.ReLU(),
+            nn.Linear(int(input_dim/2), input_dim),
+            nn.Sigmoid()
+        )
+        self.classifier = nn.Linear(latent_dim, n_classes)
+
+    def reparameterize(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        z = mu + eps * std
+        return z
+
+    def forward(self, x):
+        encoding = self.encoder(x)
+        mu, logvar = encoding.chunk(2, dim=-1)
+        z = self.reparameterize(mu, logvar)
+        reconstruction = self.decoder(z)
+        classification = self.classifier(z)
+        return reconstruction, classification, mu, logvar
+
+# Define the training loop for semi-supervised learning
+def train_vib_semisupervised(model, data_loader, optimizer, device, epoch):
+    model.train()
+    train_loss = 0.0
+    for batch_idx, (data, targets) in enumerate(data_loader):
+        data = data.to(device)
+        data = data.view(data.size(0), -1)  # Flatten MNIST images to a vector
+        targets = targets.to(device)
+
+        optimizer.zero_grad()
+        reconstruction, classification, mu, logvar = model(data)
+
+        # Compute the VIB loss
+        loss_reconstruction = nn.BCELoss(reduction='sum')(reconstruction, data)
+        loss_KL = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+        beta = 1.0  # Weight parameter for the KL divergence
+
+        # Semi-supervised loss
+        labeled_mask = targets >= 0
+        if labeled_mask.any():
+            labeled_targets = targets[labeled_mask]
+            labeled_classification = classification[labeled_mask]
+            loss_classification = nn.CrossEntropyLoss()(labeled_classification, labeled_targets)
+            loss = loss_reconstruction + beta * loss_KL + loss_classification
+        else:
+            loss = loss_reconstruction + beta * loss_KL
+
+        loss.backward()
+        optimizer.step()
+
+        train_loss += loss.item()
+
+        if batch_idx % 100 == 0:
+            print('Epoch {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(data_loader.dataset),
+                100. * batch_idx / len(data_loader), loss.item() / len(data)))
+
+    print('====> Epoch: {} Average loss: {:.4f}'.format(
+          epoch, train_loss / len(data_loader.dataset)))
+
+

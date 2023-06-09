@@ -52,7 +52,6 @@ def calculate_accuracy(list1, list2):
     accuracy = count / total
     print(accuracy)
 
-
 def fit(dataset, model):
     labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
     orig_labels = dataset['train_loader'].dataset.targets
@@ -83,21 +82,24 @@ def fit(dataset, model):
     unlabeled_trainloader = torch.utils.data.DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
 
     # train ssl
-    while True:
-        unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
-        print(f'unlabeled samples: {unlabeled_samples}')
-        dataset_ssl = {
-            'train_loader': labeled_trainloader,
-            'test_loader': dataset['test_loader']
-        }
-        for i in range(setup['label_every']):
-            train.moe_ssl_train(model, dataset_ssl)
-        labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
-        if unlabeled_trainloader == None:
-            break
+    # while True:
+    #     unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
+    #     print(f'unlabeled samples: {unlabeled_samples}')
+    #     dataset_ssl = {
+    #         'train_loader': labeled_trainloader,
+    #         'test_loader': dataset['test_loader']
+    #     }
+    #     for i in range(setup['label_every']):
+    #         train.moe_ssl_train(model, dataset_ssl)
+    #     labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
+    #     if unlabeled_trainloader == None:
+    #         break
 
-    print(f'unlabeled samples: {unlabeled_samples}')
-    print(f'ssl labels: {labeled_trainloader.dataset.tensors[1][:100]}')
-    print(f'GT labels: {orig_labels[:100]}')
+    dataset = {'labeled_trainloader': labeled_trainloader,
+               'unlabeled_trainloader': unlabeled_trainloader,
+               'testloader': dataset['test_loader']}
+    print(f'unlabeled samples: {len(labeled_indexes)}')
+    print(f'labeled samples: {len(unlabeled_indexes)}')
+    # print(f'GT labels: {orig_labels[:100]}')
     # calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
-    return model, labeled_trainloader
+    return model, dataset

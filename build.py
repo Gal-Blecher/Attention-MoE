@@ -44,6 +44,12 @@ def create_experts():
     if setup['expert_type']=='mobilenet':
         for e in range(setup['n_experts']):
             experts.append(nets.MobileNetV2(e))
+    if setup['expert_type']=='VIB':
+        for e in range(setup['n_experts']):
+            experts.append(nets.VIB(e,
+                                     input_dim=train_config['dataset']['mnist']['input_dim'],
+                                     n_classes=train_config['dataset']['mnist']['n_classes'],
+                                     latent_dim=2))
 
     return experts
 

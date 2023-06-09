@@ -29,7 +29,5 @@ if __name__ == '__main__':
         train.train_expert(model, dataset)
     else:
         if setup['ssl']:
-            model, train_labeled_dataset_ssl = self_supervised.fit(dataset, model)
-            dataset = {'train_loader': train_labeled_dataset_ssl,
-                       'test_loader': dataset['test_loader']}
-        train.moe_train(model, dataset)
+            model, dataset = self_supervised.fit(dataset, model)
+        train.moe_train_vib(model, dataset)

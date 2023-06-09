@@ -36,6 +36,9 @@ train_config = {
         'naive_fc': {
             'emb_dim': 2
         },
+        'VIB': {
+            'emb_dim': 2
+        },
         'resnet18': {
             'emb_dim': 512
         },
@@ -60,10 +63,10 @@ setup = {'n_epochs': 50,
          'router_lr': 0.001,
          'kl_coeff': 0.001,
          'experts_coeff': 1.0,
-         'expert_type': 'resnet18',
-         'dataset_name': 'cifar10',
+         'expert_type': 'VIB',
+         'dataset_name': 'mnist',
          'n_experts': 2,
-         'experiment_name': 'ssl_2_experts_1000_labels_27',
+         'experiment_name': 'test',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
