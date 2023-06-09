@@ -400,12 +400,20 @@ class VIB(nn.Module):
         return z
 
     def forward(self, x):
+        x = x.flatten(start_dim=1)
         encoding = self.encoder(x)
-        mu, logvar = encoding.chunk(2, dim=-1)
-        z = self.reparameterize(mu, logvar)
-        reconstruction = self.decoder(z)
+        self.mu, self.logvar = encoding.chunk(2, dim=-1)
+        z = self.reparameterize(self.mu, self.logvar)
+        self.reconstruction = self.decoder(z)
         classification = self.classifier(z)
-        return reconstruction, classification, mu, logvar
+        self.out = classification
+
+        loss_reconstruction = nn.BCEWithLogitsLoss(reduction='none')(self.reconstruction, x).sum(1) / 784
+
+        loss_KL = -0.5 * torch.sum(1 + self.logvar - self.mu.pow(2) - self.logvar.exp())
+        beta = 1.0  # Weight parameter for the KL divergence
+        self.loss_reconstruction = loss_reconstruction + beta * loss_KL
+        return z, classification
 
 # Define the training loop for semi-supervised learning
 def train_vib_semisupervised(model, data_loader, optimizer, device, epoch):

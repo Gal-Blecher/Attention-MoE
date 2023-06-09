@@ -77,8 +77,9 @@ def fit(dataset, model):
         images.append(img)
 
     images_tensor = torch.stack(images)
+    labels_tensor = torch.zeros(len(images_tensor)) - 1
 
-    unlabeled_dataset = torch.utils.data.TensorDataset(images_tensor)
+    unlabeled_dataset = torch.utils.data.TensorDataset(images_tensor, labels_tensor)
     unlabeled_trainloader = torch.utils.data.DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
 
     # train ssl
@@ -97,7 +98,7 @@ def fit(dataset, model):
 
     dataset = {'labeled_trainloader': labeled_trainloader,
                'unlabeled_trainloader': unlabeled_trainloader,
-               'testloader': dataset['test_loader']}
+               'test_loader': dataset['test_loader']}
     print(f'unlabeled samples: {len(labeled_indexes)}')
     print(f'labeled samples: {len(unlabeled_indexes)}')
     # print(f'GT labels: {orig_labels[:100]}')

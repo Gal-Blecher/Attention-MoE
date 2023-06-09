@@ -191,8 +191,13 @@ def moe_train_vib(model, dataset):
             optimizer_experts.zero_grad()
             optimizer_router.zero_grad()
             outputs, att_weights = model(inputs)
-            net_loss = criterion(outputs, targets)
-            experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
+            if epoch % 2 ==0:
+                net_loss = criterion(outputs, targets)
+                experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
+            else:
+                net_loss = 0
+                experts_loss_ = experts_loss_reconstraction_only(targets, att_weights.squeeze(2), model)
+
             kl_loss = kl_divergence(att_weights.sum(0))
             loss = net_loss + setup['experts_coeff'] * experts_loss_ + setup['kl_coeff'] * kl_loss
 
@@ -255,8 +260,71 @@ def experts_loss(labels, att_weights, model):
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
+            criterion(model.expert1.out, labels) + model.expert1.loss_reconstruction,
+            criterion(model.expert2.out, labels) + model.expert1.loss_reconstruction
+            )
+            , dim=1)
+
+    if model.n_experts == 4:
+        experts_loss_ = torch.stack(
+            (
             criterion(model.expert1.out, labels),
-            criterion(model.expert2.out, labels)
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 8:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels),
+            criterion(model.expert5.out, labels),
+            criterion(model.expert6.out, labels),
+            criterion(model.expert7.out, labels),
+            criterion(model.expert8.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 16:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels),
+            criterion(model.expert5.out, labels),
+            criterion(model.expert6.out, labels),
+            criterion(model.expert7.out, labels),
+            criterion(model.expert8.out, labels),
+            criterion(model.expert9.out, labels),
+            criterion(model.expert10.out, labels),
+            criterion(model.expert11.out, labels),
+            criterion(model.expert12.out, labels),
+            criterion(model.expert13.out, labels),
+            criterion(model.expert14.out, labels),
+            criterion(model.expert15.out, labels),
+            criterion(model.expert16.out, labels)
+            )
+            , dim=1)
+
+    att_weights_flattened = torch.flatten(att_weights)
+    experts_loss_flattend = torch.flatten(experts_loss_)
+    weighted_experts_loss = torch.dot(att_weights_flattened, experts_loss_flattend)
+    return weighted_experts_loss / labels.shape[0]
+
+def experts_loss_reconstraction_only(labels, att_weights, model):
+    device = train_config['device']
+    labels = labels.to(device)
+    criterion = nn.CrossEntropyLoss(reduction='none')
+    if model.n_experts == 2:
+        experts_loss_ = torch.stack(
+            (
+            model.expert1.loss_reconstruction,
+            model.expert1.loss_reconstruction
             )
             , dim=1)
 
