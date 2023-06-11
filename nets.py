@@ -411,7 +411,7 @@ class VIB(nn.Module):
         loss_reconstruction = nn.BCEWithLogitsLoss(reduction='none')(self.reconstruction, x).sum(1) / 784
 
         loss_KL = -0.5 * torch.sum(1 + self.logvar - self.mu.pow(2) - self.logvar.exp())
-        beta = 1.0  # Weight parameter for the KL divergence
+        beta = 0.00001  # Weight parameter for the KL divergence
         self.loss_reconstruction = loss_reconstruction + beta * loss_KL
         return z, classification
 

@@ -58,7 +58,7 @@ train_config = {
     'device': device.type
 }
 
-setup = {'n_epochs': 200,
+setup = {'n_epochs': 300,
          'lr': 0.01,
          'router_lr': 0.01,
          'kl_coeff': 0.0001,
@@ -66,14 +66,16 @@ setup = {'n_epochs': 200,
          'expert_type': 'VIB',
          'dataset_name': 'mnist',
          'n_experts': 2,
-         'experiment_name': 'test_200',
+         'experiment_name': 'test_300_1000_4',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
          'ssl': 1_000,
          'ssl_lr': 0.01,
          'ssl_th': 0.7,
-         'label_every': 1
+         'label_every': 1,
+         'label_all': False,
+         'labeled_only': False
          }
 
 

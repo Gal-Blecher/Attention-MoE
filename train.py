@@ -182,7 +182,7 @@ def moe_train_vib(model, dataset):
         running_loss = 0
         correct = 0
         total = 0
-        if epoch % 2 == 0:
+        if (epoch % 2 == 0) or (setup['labeled_only'] == True):
             loader = dataset['labeled_trainloader']
         else:
             loader = dataset['unlabeled_trainloader']
@@ -191,12 +191,12 @@ def moe_train_vib(model, dataset):
             optimizer_experts.zero_grad()
             optimizer_router.zero_grad()
             outputs, att_weights = model(inputs)
-            if epoch % 2 ==0:
+            if (epoch % 2 == 0) or (setup['label_all']) or (setup['labeled_only'] == True):
                 net_loss = criterion(outputs, targets)
                 experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
             else:
                 net_loss = 0
-                experts_loss_ = experts_loss_reconstraction_only(targets, att_weights.squeeze(2), model)
+                experts_loss_ = 0.0001 * experts_loss_reconstraction_only(targets, att_weights.squeeze(2), model)
 
             kl_loss = kl_divergence(att_weights.sum(0))
             loss = net_loss + setup['experts_coeff'] * experts_loss_ + setup['kl_coeff'] * kl_loss
@@ -260,8 +260,8 @@ def experts_loss(labels, att_weights, model):
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
-            criterion(model.expert1.out, labels) + model.expert1.loss_reconstruction,
-            criterion(model.expert2.out, labels) + model.expert1.loss_reconstruction
+            criterion(model.expert1.out, labels) + 0.01 * model.expert1.loss_reconstruction,
+            criterion(model.expert2.out, labels) + 0.01 * model.expert1.loss_reconstruction
             )
             , dim=1)
 

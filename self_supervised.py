@@ -72,12 +72,16 @@ def fit(dataset, model):
 
     # create unlabeled trainloader
     images = []
+    labels = []
     for i in unlabeled_indexes:
         img, label = dataset['train_loader'].dataset[i]
         images.append(img)
+        labels.append(label)
 
     images_tensor = torch.stack(images)
     labels_tensor = torch.zeros(len(images_tensor)) - 1
+    if setup['label_all'] == True:
+        labels_tensor = torch.tensor(labels)
 
     unlabeled_dataset = torch.utils.data.TensorDataset(images_tensor, labels_tensor)
     unlabeled_trainloader = torch.utils.data.DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
@@ -99,8 +103,8 @@ def fit(dataset, model):
     dataset = {'labeled_trainloader': labeled_trainloader,
                'unlabeled_trainloader': unlabeled_trainloader,
                'test_loader': dataset['test_loader']}
-    print(f'unlabeled samples: {len(labeled_indexes)}')
-    print(f'labeled samples: {len(unlabeled_indexes)}')
+    print(f'unlabeled samples: {len(unlabeled_indexes)}')
+    print(f'labeled samples: {len(labeled_indexes)}')
     # print(f'GT labels: {orig_labels[:100]}')
     # calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
     return model, dataset
