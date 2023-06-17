@@ -50,7 +50,9 @@ def create_experts():
                                      input_dim=train_config['dataset']['mnist']['input_dim'],
                                      n_classes=train_config['dataset']['mnist']['n_classes'],
                                      latent_dim=2))
-
+    if setup['expert_type']=='VIBNet':
+        for e in range(setup['n_experts']):
+            experts.append(nets.VIBNet(e))
     return experts
 
 

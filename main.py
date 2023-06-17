@@ -28,6 +28,6 @@ if __name__ == '__main__':
         # summary(model, (3, 32, 32))
         train.train_expert(model, dataset)
     else:
-        if setup['ssl']:
-            model, dataset = self_supervised.fit(dataset, model)
+        # if setup['ssl']:
+        #     model, dataset = self_supervised.fit(dataset, model)
         train.moe_train_vib(model, dataset)

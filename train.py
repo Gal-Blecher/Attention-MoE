@@ -8,6 +8,8 @@ import os
 import json
 import pickle
 from utils import get_logger
+from itertools import cycle
+
 
 
 
@@ -182,42 +184,60 @@ def moe_train_vib(model, dataset):
         running_loss = 0
         correct = 0
         total = 0
-        if (epoch % 2 == 0) or (setup['labeled_only'] == True):
-            loader = dataset['labeled_trainloader']
+        batch_idx = 0
+        if setup['labeled_only'] == True:
+            labeled_iter = iter(dataset['labeled_trainloader'])
         else:
-            loader = dataset['unlabeled_trainloader']
-        for batch_idx, (inputs, targets) in enumerate(loader):
-            inputs, targets = inputs.to(device), targets.to(device)
+            labeled_iter = iter(cycle(dataset['labeled_trainloader']))
+        unlabeled_iter = iter(dataset['unlabeled_trainloader'])
+        for labeled_data, unlabeled_data in zip(labeled_iter, unlabeled_iter):
             optimizer_experts.zero_grad()
             optimizer_router.zero_grad()
-            outputs, att_weights = model(inputs)
-            if (epoch % 2 == 0) or (setup['label_all']) or (setup['labeled_only'] == True):
-                net_loss = criterion(outputs, targets)
-                experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
+            # labeled data
+            labeled_input, targets = labeled_data[0].to(device), labeled_data[1].to(device)
+
+            labeled_output, labeled_att_weights = model(labeled_input)
+
+            labeled_net_loss = criterion(labeled_output, targets)
+            labeled_experts_loss_ = experts_loss(targets, labeled_att_weights.squeeze(2), model)
+            labeled_kl_loss_router = kl_divergence(labeled_att_weights.sum(0))
+            labeled_loss = labeled_net_loss + labeled_experts_loss_ + labeled_kl_loss_router
+
+            # Unlabeled dataset
+            if setup['labeled_only'] == False:
+                unlabeled_input = unlabeled_data[0].to(device)
+                unlabeled_output, unlabeled_att_weights = model(unlabeled_input)
+
+                # ublabeled_net_loss = criterion(unlabeled_output, targets)
+                unlabeled_experts_loss_ = unlabeled_experts_loss(targets, unlabeled_att_weights.squeeze(2), model)
+                # unlabeled_kl_loss_router = kl_divergence(labeled_att_weights.sum(0))
+                unlabeled_loss = unlabeled_experts_loss_
             else:
-                net_loss = 0
-                experts_loss_ = 0.0001 * experts_loss_reconstraction_only(targets, att_weights.squeeze(2), model)
+                unlabeled_loss = 0
 
-            kl_loss = kl_divergence(att_weights.sum(0))
-            loss = net_loss + setup['experts_coeff'] * experts_loss_ + setup['kl_coeff'] * kl_loss
-
+            loss = labeled_loss + 1.0 * unlabeled_loss
             loss.backward()
             optimizer_experts.step()
             optimizer_router.step()
 
             running_loss += loss.item()
-            _, predicted = outputs.max(1)
+            _, predicted = labeled_output.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             if batch_idx % 50 == 0:
-                logger.info(f'batch_idx: {batch_idx}, experts ratio: {att_weights.sum(0).data.T}')
+                logger.info(f'batch_idx: {batch_idx}, experts ratio: {labeled_att_weights.sum(0).data.T}')
+
+            batch_idx += 1
+
+
+
         acc_train = round((correct/total)*100, 2)
         logger.info(f'epoch: {epoch}, train accuracy: {acc_train}')
 
         scheduler_experts.step()
         scheduler_router.step()
         if epoch % 1 == 0 or epoch > 150:
-            acc_test = moe_test(dataset['test_loader'], model)
+            acc_test = moe_test(dataset['testloader'], model)
             model.test_acc.append(acc_test)
             logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
             with open(f"{path}/current_epoch.txt", "w") as file:
@@ -260,8 +280,71 @@ def experts_loss(labels, att_weights, model):
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
-            criterion(model.expert1.out, labels) + 0.01 * model.expert1.loss_reconstruction,
-            criterion(model.expert2.out, labels) + 0.01 * model.expert1.loss_reconstruction
+            criterion(model.expert1.out, labels) + 0 * model.expert1.reconstruction_loss + 0.01 * model.expert1.kl_loss,
+            criterion(model.expert2.out, labels) + 0 * model.expert2.reconstruction_loss + 0.01 * model.expert2.kl_loss
+            )
+            , dim=1)
+
+    if model.n_experts == 4:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 8:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels),
+            criterion(model.expert5.out, labels),
+            criterion(model.expert6.out, labels),
+            criterion(model.expert7.out, labels),
+            criterion(model.expert8.out, labels)
+            )
+            , dim=1)
+
+    if model.n_experts == 16:
+        experts_loss_ = torch.stack(
+            (
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels),
+            criterion(model.expert3.out, labels),
+            criterion(model.expert4.out, labels),
+            criterion(model.expert5.out, labels),
+            criterion(model.expert6.out, labels),
+            criterion(model.expert7.out, labels),
+            criterion(model.expert8.out, labels),
+            criterion(model.expert9.out, labels),
+            criterion(model.expert10.out, labels),
+            criterion(model.expert11.out, labels),
+            criterion(model.expert12.out, labels),
+            criterion(model.expert13.out, labels),
+            criterion(model.expert14.out, labels),
+            criterion(model.expert15.out, labels),
+            criterion(model.expert16.out, labels)
+            )
+            , dim=1)
+
+    att_weights_flattened = torch.flatten(att_weights)
+    experts_loss_flattend = torch.flatten(experts_loss_)
+    weighted_experts_loss = torch.dot(att_weights_flattened, experts_loss_flattend)
+    return weighted_experts_loss / labels.shape[0]
+
+def unlabeled_experts_loss(labels, att_weights, model):
+    device = train_config['device']
+    labels = labels.to(device)
+    criterion = nn.CrossEntropyLoss(reduction='none')
+    if model.n_experts == 2:
+        experts_loss_ = torch.stack(
+            (
+            model.expert1.reconstruction_loss + 0.01 * model.expert1.kl_loss,
+            model.expert2.reconstruction_loss + 0.01 * model.expert2.kl_loss
             )
             , dim=1)
 
@@ -455,3 +538,4 @@ def moe_ssl_train(model, dataset):
         acc_test = moe_test(dataset['test_loader'], model)
         model.test_acc.append(acc_test)
         print(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
+

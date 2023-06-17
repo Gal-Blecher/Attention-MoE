@@ -11,6 +11,7 @@ import config
 import utils
 from config import setup
 import random
+from torch.utils.data import Subset, DataLoader
 
 def get_dataset(dataset_name=None):
     # if dataset_name != None:
@@ -90,8 +91,6 @@ def get_dataset(dataset_name=None):
                                      std=(0.229, 0.224, 0.225))
             ])
 
-
-
         train_data = utils.Cub200('./cub2011', train=True, transform=transform_train)
         test_data = utils.Cub200('./cub2011', train=False, transform=transform_test)
 
@@ -100,14 +99,6 @@ def get_dataset(dataset_name=None):
 
     if setup['dataset_name'] == 'rotate_cifar10':
         print('==> Preparing data..')
-
-        # def seed_worker(worker_id):
-        #     worker_seed = torch.initial_seed() % 2 ** 32
-        #     np.random.seed(worker_seed)
-        #     random.seed(worker_seed)
-        #
-        # g = torch.Generator()
-        # g.manual_seed(0)
 
         transform_train = transforms.Compose([
             transforms.CenterCrop(24),
@@ -182,6 +173,37 @@ def get_dataset(dataset_name=None):
 
         classes = ('plane', 'car', 'bird', 'cat', 'deer',
                    'dog', 'frog', 'horse', 'ship', 'truck')
+
+    if setup['dataset_name'] == 'mnist_ssl':
+        # Load the MNIST dataset
+        transform = torchvision.transforms.Compose([
+            torchvision.transforms.ToTensor(),
+            torchvision.transforms.Normalize((0.1307,), (0.3081,))
+        ])
+        mnist_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+
+        # Split the dataset into labeled and unlabeled subsets
+        num_total_samples = len(mnist_dataset)
+        indices = torch.randperm(num_total_samples)
+        labeled_indices = indices[:setup['ssl']]
+        unlabeled_indices = indices[setup['ssl']:]
+
+        labeled_dataset = Subset(mnist_dataset, labeled_indices)
+        unlabeled_dataset = Subset(mnist_dataset, unlabeled_indices)
+
+        # Create data loaders for labeled, unlabeled, and test sets
+        labeled_loader = DataLoader(labeled_dataset, batch_size=64, shuffle=True)
+        unlabeled_loader = DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
+
+        test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+        test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+        dataset = {
+            'labeled_trainloader': labeled_loader,
+            'unlabeled_trainloader': unlabeled_loader,
+            'testloader': test_loader
+        }
+
+        return dataset
 
 
     # print_data_info(train_loader, test_loader, setup['dataset_name'])

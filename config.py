@@ -53,24 +53,27 @@ train_config = {
         },
         'mobilenet': {
             'emb_dim': 1280
+        },
+        'VIBNet': {
+            'emb_dim': 4
         }
     },
     'device': device.type
 }
 
-setup = {'n_epochs': 300,
+setup = {'n_epochs': 100,
          'lr': 0.01,
          'router_lr': 0.01,
-         'kl_coeff': 0.0001,
+         'kl_coeff': 0,
          'experts_coeff': 1.0,
-         'expert_type': 'VIB',
-         'dataset_name': 'mnist',
+         'expert_type': 'VIBNet',
+         'dataset_name': 'mnist_ssl',
          'n_experts': 2,
-         'experiment_name': 'test_300_1000_4',
+         'experiment_name': 'VIBNet_100_7',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
-         'ssl': 1_000,
+         'ssl': 100,
          'ssl_lr': 0.01,
          'ssl_th': 0.7,
          'label_every': 1,
