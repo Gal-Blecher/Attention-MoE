@@ -69,7 +69,7 @@ setup = {'n_epochs': 100,
          'expert_type': 'VIBNet',
          'dataset_name': 'mnist_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNet_100_7',
+         'experiment_name': 'VIBNet_100_11',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
@@ -78,7 +78,8 @@ setup = {'n_epochs': 100,
          'ssl_th': 0.7,
          'label_every': 1,
          'label_all': False,
-         'labeled_only': False
+         'labeled_only': False,
+         'unlabeled_only': True
          }
 
 
