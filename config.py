@@ -62,14 +62,14 @@ train_config = {
 }
 
 setup = {'n_epochs': 100,
-         'lr': 0.1,
-         'router_lr': 0.1,
-         'kl_coeff': 0,
+         'lr': 0.01,
+         'router_lr': 0.01,
+         'kl_coeff': 0.01,
          'experts_coeff': 1.0,
          'expert_type': 'VIBNet',
          'dataset_name': 'mnist_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNet_100_12',
+         'experiment_name': 'VIBNet_100_14',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
