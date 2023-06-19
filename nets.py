@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 class VIBNet(nn.Module):
-    def __init__(self, seed, latent_dim=4, num_classes=10):
+    def __init__(self, seed, latent_dim=train_config['nets']['VIBNet']['emb_dim'], num_classes=10):
         super(VIBNet, self).__init__()
         torch.manual_seed(seed)
         self.encoder = nn.Sequential(
@@ -58,7 +58,7 @@ class VIBNet(nn.Module):
         classification_output = self.fc_classifier(z)
 
         # Reconstruction loss
-        recon_loss = nn.MSELoss(reduction='none')(x_hat, x_input)
+        recon_loss = (x_hat - x_input) ** 2
         recon_loss = recon_loss.flatten(start_dim=1).mean(1)
 
 

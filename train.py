@@ -65,8 +65,8 @@ def moe_train_vib(model, dataset):
 
                 # ublabeled_net_loss = criterion(unlabeled_output, targets)
                 unlabeled_experts_loss_ = unlabeled_experts_loss(unlabeled_att_weights.squeeze(2), model)
-                # unlabeled_kl_loss_router = kl_divergence(labeled_att_weights.sum(0))
-                unlabeled_loss = unlabeled_experts_loss_
+                unlabeled_kl_loss_router = kl_divergence(unlabeled_att_weights.sum(0))
+                unlabeled_loss = unlabeled_experts_loss_ + 0.1 * unlabeled_kl_loss_router
             else:
                 unlabeled_loss = 0
 
@@ -79,11 +79,11 @@ def moe_train_vib(model, dataset):
             # _, predicted = labeled_output.max(1)
             # total += targets.size(0)
             # correct += predicted.eq(targets).sum().item()
-            # if batch_idx % 50 == 0:
-            #     logger.info(f'batch_idx: {batch_idx}, experts ratio: {labeled_att_weights.sum(0).data.T}')
+            if batch_idx % 50 == 0:
+                print(f'batch_idx: {batch_idx}, loss: {loss}')
 
             batch_idx += 1
-            print(epoch)
+        print(epoch)
 
 
 
@@ -152,8 +152,8 @@ def unlabeled_experts_loss(att_weights, model):
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
-            1.0 * model.expert1.reconstruction_loss + 0.1 * model.expert1.kl_loss,
-            1.0 * model.expert2.reconstruction_loss + 0.1 * model.expert2.kl_loss
+            1.0 * model.expert1.reconstruction_loss + 0.00001 * model.expert1.kl_loss,
+            1.0 * model.expert2.reconstruction_loss + 0.00001 * model.expert2.kl_loss
             )
             , dim=1)
 

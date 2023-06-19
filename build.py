@@ -55,7 +55,6 @@ def create_experts():
             experts.append(nets.VIBNet(e))
     return experts
 
-
 class AdditiveAttention(nn.Module):
 
     def __init__(self) -> None:
@@ -71,7 +70,6 @@ class AdditiveAttention(nn.Module):
         score = self.score_proj(torch.tanh(self.key_proj(key) + self.query_proj(query) + self.bias)).squeeze(1)
         attn = F.softmax(score, dim=0)
         return attn
-
 
 class MoE(nn.Module):
     def __init__(self, experts, router):
@@ -90,6 +88,7 @@ class MoE(nn.Module):
             att_weights = self.router(z, z, z).permute(1,0,2)
         experts_out_ = torch.stack(experts_out_list, dim=0).permute(1, 2, 0)
         out = torch.bmm(experts_out_, att_weights)
+
 
         return out.squeeze(2), att_weights
 
