@@ -53,18 +53,18 @@ def moe_train_vib(model, dataset):
             labeled_input, targets = labeled_data[0].to(device), labeled_data[1].to(device)
             labeled_output, labeled_att_weights = model(labeled_input)
 
-            labeled_net_loss = criterion(labeled_output, targets)
-            labeled_experts_loss_ = setup['experts_coeff'] * experts_loss(targets, labeled_att_weights.squeeze(2), model)
-            labeled_kl_loss_router = setup['kl_coeff'] * kl_divergence(labeled_att_weights.sum(0))
+            labeled_net_loss = setup['classification_loss_coeff_net'] * criterion(labeled_output, targets)
+            labeled_experts_loss_ = setup['experts_coeff_labeled'] * experts_loss(targets, labeled_att_weights.squeeze(2), model)
+            labeled_kl_loss_router = setup['kl_coeff_router_labeled'] * kl_divergence(labeled_att_weights.sum(0))
             labeled_loss = labeled_net_loss + labeled_experts_loss_ + labeled_kl_loss_router
 
-            # Unlabeled dataset
+            # Unlabeled data
             if setup['labeled_only'] == False:
                 unlabeled_input = unlabeled_data[0].to(device)
                 unlabeled_output, unlabeled_att_weights = model(unlabeled_input)
 
-                unlabeled_experts_loss_ = setup['experts_coeff'] * unlabeled_experts_loss(unlabeled_att_weights.squeeze(2), model)
-                unlabeled_kl_loss_router = setup['kl_coeff'] * kl_divergence(unlabeled_att_weights.sum(0))
+                unlabeled_experts_loss_ = setup['experts_coeff_unlabeled'] * unlabeled_experts_loss(unlabeled_att_weights.squeeze(2), model)
+                unlabeled_kl_loss_router = (setup['kl_coeff_router_unlabeled']) * kl_divergence(unlabeled_att_weights.sum(0))
                 unlabeled_loss = unlabeled_experts_loss_ + unlabeled_kl_loss_router
             else:
                 unlabeled_loss = 0
@@ -131,11 +131,10 @@ def experts_loss(labels, att_weights, model):
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
-            criterion(model.expert1.out, labels) + 0.1 * model.expert1.reconstruction_loss + 0.00001 * model.expert1.kl_loss,
-            criterion(model.expert2.out, labels) + 0.1 * model.expert2.reconstruction_loss + 0.00001 * model.expert2.kl_loss
+            setup['criterion_labeled_experts'] * criterion(model.expert1.out, labels) + setup['reconstruction_labeled_experts'] * model.expert1.reconstruction_loss + setup['kl_labeled_experts'] * model.expert1.kl_loss,
+            setup['criterion_labeled_experts'] * criterion(model.expert2.out, labels) + setup['reconstruction_labeled_experts'] * model.expert2.reconstruction_loss + setup['kl_labeled_experts'] * model.expert2.kl_loss
             )
             , dim=1)
-
 
     att_weights_flattened = torch.flatten(att_weights)
     experts_loss_flattend = torch.flatten(experts_loss_)
@@ -143,12 +142,11 @@ def experts_loss(labels, att_weights, model):
     return weighted_experts_loss / labels.shape[0]
 
 def unlabeled_experts_loss(att_weights, model):
-    device = train_config['device']
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
-            0.1 * model.expert1.reconstruction_loss + 0.00001 * model.expert1.kl_loss,
-            0.1 * model.expert2.reconstruction_loss + 0.00001 * model.expert2.kl_loss
+            setup['reconstruction_unlabeled_experts'] * model.expert1.reconstruction_loss + setup['kl_unlabeled_experts'] * model.expert1.kl_loss,
+            setup['reconstruction_unlabeled_experts'] * model.expert2.reconstruction_loss + setup['kl_unlabeled_experts'] * model.expert2.kl_loss
             )
             , dim=1)
 

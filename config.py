@@ -61,27 +61,33 @@ train_config = {
     'device': device.type
 }
 
-setup = {'n_epochs': 100,
-         'lr': 0.01,
-         'router_lr': 0.01,
-         'kl_coeff': 0.1,
-         'experts_coeff': 1.0,
+setup = {'n_epochs': 50,
+         'lr': 0.001,
+         'router_lr': 0.001,
          'expert_type': 'VIBNet',
          'dataset_name': 'mnist_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNet_100_29_lo',
+         'experiment_name': 'VIBNet_50_53',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
-         'ssl': 100,
-         'ssl_lr': 0.01,
-         'ssl_th': 0.7,
-         'label_every': 1,
-         'label_all': False,
-         'labeled_only': True,
-         'unlabeled_only': None,
-         'unlabeled_coeff': 1.0,
-         'labeled_coeff': 1.0
+         'ssl': 50,
+         'labeled_only': False,
+         'unlabeled_only': False,
+         'unlabeled_coeff': 0.001,
+         'labeled_coeff': 1.0,
+         'labeled_batch_size': 8,
+         'unlabeled_batch_size': 512,
+         'experts_coeff_labeled': 1.0,
+         'experts_coeff_unlabeled': 1.0,
+         'kl_coeff_router_labeled': 1.0,
+         'kl_coeff_router_unlabeled': 0,
+         'classification_loss_coeff_net': 1.0,
+         'criterion_labeled_experts': 1.0,
+         'reconstruction_labeled_experts': 0,
+         'kl_labeled_experts': 0,
+         'reconstruction_unlabeled_experts': 1.0,
+         'kl_unlabeled_experts': 0.00001
          }
 
 

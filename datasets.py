@@ -192,8 +192,8 @@ def get_dataset(dataset_name=None):
         unlabeled_dataset = Subset(mnist_dataset, unlabeled_indices)
 
         # Create data loaders for labeled, unlabeled, and test sets
-        labeled_loader = DataLoader(labeled_dataset, batch_size=64, shuffle=True)
-        unlabeled_loader = DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
+        labeled_loader = DataLoader(labeled_dataset, batch_size=setup['labeled_batch_size'], shuffle=True)
+        unlabeled_loader = DataLoader(unlabeled_dataset, batch_size=setup['unlabeled_batch_size'], shuffle=True)
 
         test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
         test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)

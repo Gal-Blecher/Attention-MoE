@@ -5,8 +5,6 @@ import build
 import train
 import plots
 import os
-import self_supervised
-# from torchsummary import summary
 
 torch.manual_seed(42)
 
@@ -18,14 +16,13 @@ if __name__ == '__main__':
     if setup['model_eval_path'] != None:
         model = torch.load(setup['model_eval_path'], map_location=torch.device('cpu'))
         if setup['evaluate'] == True:
-            dominant_dict = plots.experts_areas(model, dataset['test_loader'])
-            points_df = plots.plot_data_latent(model.expert1, dataset['test_loader'])
+            dominant_dict = plots.experts_areas(model, dataset['testloader'])
+            points_df = plots.plot_data_latent(model.expert1, dataset['testloader'])
 
     else:
         model = build.build_model()
     if setup['n_experts'] == 1:
         model = model.expert1
-        # summary(model, (3, 32, 32))
         train.train_expert(model, dataset)
     else:
         # if setup['ssl']:
