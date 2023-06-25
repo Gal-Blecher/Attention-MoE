@@ -82,6 +82,9 @@ def moe_train_vib(model, dataset):
             if batch_idx % 50 == 0:
                 logger.info(f'batch_idx: {batch_idx}, balance between experts: {labeled_att_weights.sum(0).T.detach()}, loss: {round(running_loss/50, 4)}')
                 running_loss = 0
+
+            acc_test = moe_test(dataset['testloader'], model)
+            logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
             batch_idx += 1
 
         acc_train = round((correct/total)*100, 2)
