@@ -28,10 +28,10 @@ def moe_train_vib(model, dataset):
     criterion = nn.CrossEntropyLoss()
     optimizer_experts = optim.SGD(itertools.chain(*experts_params), lr=setup['lr'],
                           momentum=0.9, weight_decay=5e-4)
-    scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=setup['n_epochs'])
+    scheduler_experts = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_experts, T_max=setup['n_epochs']*599)
     optimizer_router = optim.SGD(router_params, lr=setup['router_lr'],
                           momentum=0.9, weight_decay=5e-4)
-    scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
+    scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs']*599)
     model.test_acc = []
     for epoch in range(setup['n_epochs']):
         model.train()
@@ -39,11 +39,16 @@ def moe_train_vib(model, dataset):
         correct = 0
         total = 0
         batch_idx = 1
+        batch_epoch = epoch * 599
         if setup['labeled_only'] == True:
             labeled_iter = iter(dataset['labeled_trainloader'])
         else:
             labeled_iter = iter(cycle(dataset['labeled_trainloader']))
         unlabeled_iter = iter(dataset['unlabeled_trainloader'])
+
+        if epoch == 10:
+            setup['unlabeled_only'] = False
+            print('ssl training')
 
         for labeled_data, unlabeled_data in zip(labeled_iter, unlabeled_iter):
             optimizer_experts.zero_grad()
@@ -57,6 +62,9 @@ def moe_train_vib(model, dataset):
             labeled_experts_loss_ = setup['experts_coeff_labeled'] * experts_loss(targets, labeled_att_weights.squeeze(2), model)
             labeled_kl_loss_router = setup['kl_coeff_router_labeled'] * kl_divergence(labeled_att_weights.sum(0))
             labeled_loss = labeled_net_loss + labeled_experts_loss_ + labeled_kl_loss_router
+            if setup['unlabeled_only'] == True:
+                labeled_loss = 0
+
 
             # Unlabeled data
             if setup['labeled_only'] == False:
@@ -82,35 +90,45 @@ def moe_train_vib(model, dataset):
             if batch_idx % 50 == 0:
                 logger.info(f'batch_idx: {batch_idx}, balance between experts: {labeled_att_weights.sum(0).T.detach()}, loss: {round(running_loss/50, 4)}')
                 running_loss = 0
-
-            acc_test = moe_test(dataset['testloader'], model)
-            logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
             batch_idx += 1
+            if setup['unlabeled_only'] == False:
+                logger.info(f'labeled training data accuracy: {round((correct/total)*100, 2)}')
+                test_and_save(model, dataset, path, batch_epoch, logger)
 
-        acc_train = round((correct/total)*100, 2)
+                batch_epoch += 1
+                total = 0
+                correct = 0
+                scheduler_experts.step()
+                scheduler_router.step()
+
+        acc_train = round((correct/(total+0.000001))*100, 2)
         logger.info(f'epoch: {epoch}, train accuracy: {acc_train}')
         scheduler_experts.step()
         scheduler_router.step()
 
         # Evaluation and model save
-        acc_test = moe_test(dataset['testloader'], model)
-        model.test_acc.append(acc_test)
-        logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
-        if acc_test == max(model.test_acc):
-            logger.info('--------------------------------------------saving model--------------------------------------------')
-            torch.save(model, f'{path}/model.pkl')
-            with open(f"{path}/config.txt", "w") as file:
-                file.write(json.dumps(setup))
-                file.write(json.dumps(train_config))
-            with open(f"{path}/accuracy.txt", "w") as file:
-                file.write(f'{epoch}: {acc_test}')
-        if early_stop(model.test_acc):
-            with open(f'{path}/acc_test.pkl', 'wb') as f:
-                pickle.dump(model.test_acc, f)
-            return
+        test_and_save(model, dataset, path, epoch, logger)
 
     with open(f'{path}/acc_test.pkl', 'wb') as f:
         pickle.dump(model.test_acc, f)
+
+def test_and_save(model, dataset, path, epoch, logger):
+    acc_test = moe_test(dataset['testloader'], model)
+    model.test_acc.append(acc_test)
+    logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
+    if acc_test == max(model.test_acc):
+        logger.info(
+            '--------------------------------------------saving model--------------------------------------------')
+        torch.save(model, f'{path}/model.pkl')
+        with open(f"{path}/config.txt", "w") as file:
+            file.write(json.dumps(setup))
+            file.write(json.dumps(train_config))
+        with open(f"{path}/accuracy.txt", "w") as file:
+            file.write(f'{epoch}: {acc_test}')
+    if early_stop(model.test_acc):
+        with open(f'{path}/acc_test.pkl', 'wb') as f:
+            pickle.dump(model.test_acc, f)
+        return
 
 def moe_test(test_loader, model):
     device = train_config['device']
@@ -196,7 +214,7 @@ def get_experts_params_list(model):
 def early_stop(acc_test_list):
     curr_epoch = len(acc_test_list)
     best_epoch = acc_test_list.index(max(acc_test_list))
-    if curr_epoch - best_epoch > 30:
+    if curr_epoch - best_epoch > 3000:
         return True
     else:
         return False

@@ -55,39 +55,39 @@ train_config = {
             'emb_dim': 1280
         },
         'VIBNet': {
-            'emb_dim': 8
+            'emb_dim': 128
         }
     },
     'device': device.type
 }
 
-setup = {'n_epochs': 100,
+setup = {'n_epochs': 300,
          'lr': 0.01,
          'router_lr': 0.01,
          'expert_type': 'VIBNet',
          'dataset_name': 'mnist_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNet_20_64',
+         'experiment_name': 'VIBNet_100_86',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
          'ssl': 100,
          'labeled_only': False,
-         'unlabeled_only': False,
+         'unlabeled_only': True,
          'unlabeled_coeff': 1.0,
          'labeled_coeff': 1.0,
          'labeled_batch_size': 100,
          'unlabeled_batch_size': 100,
          'experts_coeff_labeled': 1.0,
          'experts_coeff_unlabeled': 1.0,
-         'kl_coeff_router_labeled': 0,
+         'kl_coeff_router_labeled': 1.0,
          'kl_coeff_router_unlabeled': 1.0,
          'classification_loss_coeff_net': 1.0,
          'criterion_labeled_experts': 1.0,
          'reconstruction_labeled_experts': 0,
-         'kl_labeled_experts': 0,
+         'kl_labeled_experts': 0.00001,
          'reconstruction_unlabeled_experts': 1.0,
-         'kl_unlabeled_experts': 0.00001
+         'kl_unlabeled_experts': 0.000001
          }
 
 
