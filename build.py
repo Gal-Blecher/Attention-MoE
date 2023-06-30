@@ -53,6 +53,9 @@ def create_experts():
     if setup['expert_type']=='VIBNet':
         for e in range(setup['n_experts']):
             experts.append(nets.VIBNet(e))
+    if setup['expert_type'] == 'VIBNetResNet':
+        for e in range(setup['n_experts']):
+            experts.append(nets.VIBNetResNet(e))
     return experts
 
 class AdditiveAttention(nn.Module):
@@ -60,7 +63,7 @@ class AdditiveAttention(nn.Module):
     def __init__(self) -> None:
         super(AdditiveAttention, self).__init__()
         expert_type = setup['expert_type']
-        emb_dim = train_config['nets'][expert_type]['emb_dim']
+        emb_dim = int(train_config['nets'][expert_type]['emb_dim']/2)
         self.query_proj = nn.Linear(emb_dim, emb_dim, bias=False)
         self.key_proj = nn.Linear(emb_dim, emb_dim, bias=False)
         self.bias = nn.Parameter(torch.rand(emb_dim).uniform_(-0.1, 0.1))

@@ -30,6 +30,11 @@ train_config = {
             'n_classes': 10,
             'input_dim': None,
             'batch_size': 64
+        },
+        'cifar10_ssl': {
+            'n_classes': 10,
+            'input_dim': None,
+            'batch_size': 64
         }
     },
     'nets': {
@@ -56,6 +61,9 @@ train_config = {
         },
         'VIBNet': {
             'emb_dim': 128
+        },
+        'VIBNetResNet': {
+            'emb_dim': 512
         }
     },
     'device': device.type
@@ -64,16 +72,16 @@ train_config = {
 setup = {'n_epochs': 300,
          'lr': 0.01,
          'router_lr': 0.01,
-         'expert_type': 'VIBNet',
-         'dataset_name': 'mnist_ssl',
+         'expert_type': 'VIBNetResNet',
+         'dataset_name': 'cifar10_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNet_100_86',
+         'experiment_name': 'VIBNetResNet_100_1',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
          'ssl': 100,
          'labeled_only': False,
-         'unlabeled_only': True,
+         'unlabeled_only': False,
          'unlabeled_coeff': 1.0,
          'labeled_coeff': 1.0,
          'labeled_batch_size': 100,

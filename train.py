@@ -46,9 +46,9 @@ def moe_train_vib(model, dataset):
             labeled_iter = iter(cycle(dataset['labeled_trainloader']))
         unlabeled_iter = iter(dataset['unlabeled_trainloader'])
 
-        if epoch == 10:
-            setup['unlabeled_only'] = False
-            print('ssl training')
+        # if epoch == 10:
+        #     setup['unlabeled_only'] = False
+        #     print('ssl training')
 
         for labeled_data, unlabeled_data in zip(labeled_iter, unlabeled_iter):
             optimizer_experts.zero_grad()
@@ -91,15 +91,15 @@ def moe_train_vib(model, dataset):
                 logger.info(f'batch_idx: {batch_idx}, balance between experts: {labeled_att_weights.sum(0).T.detach()}, loss: {round(running_loss/50, 4)}')
                 running_loss = 0
             batch_idx += 1
-            if setup['unlabeled_only'] == False:
-                logger.info(f'labeled training data accuracy: {round((correct/total)*100, 2)}')
-                test_and_save(model, dataset, path, batch_epoch, logger)
-
-                batch_epoch += 1
-                total = 0
-                correct = 0
-                scheduler_experts.step()
-                scheduler_router.step()
+            # if setup['unlabeled_only'] == False:
+            #     logger.info(f'labeled training data accuracy: {round((correct/total)*100, 2)}')
+            #     test_and_save(model, dataset, path, batch_epoch, logger)
+            #
+            #     batch_epoch += 1
+            #     total = 0
+            #     correct = 0
+            #     scheduler_experts.step()
+            #     scheduler_router.step()
 
         acc_train = round((correct/(total+0.000001))*100, 2)
         logger.info(f'epoch: {epoch}, train accuracy: {acc_train}')

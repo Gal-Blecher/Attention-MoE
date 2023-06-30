@@ -205,6 +205,46 @@ def get_dataset(dataset_name=None):
 
         return dataset
 
+    if setup['dataset_name'] == 'cifar10_ssl':
+        # Load the MNIST dataset
+        transform_train = transforms.Compose([
+            transforms.RandomCrop(32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+
+        transform_test = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+        ])
+        trainset = torchvision.datasets.CIFAR10(
+            root='./data', train=True, download=True, transform=transform_train)
+
+        # Split the dataset into labeled and unlabeled subsets
+        num_total_samples = len(trainset)
+        indices = torch.randperm(num_total_samples)
+        labeled_indices = indices[:setup['ssl']]
+        unlabeled_indices = indices[setup['ssl']:]
+
+        labeled_dataset = Subset(trainset, labeled_indices)
+        unlabeled_dataset = Subset(trainset, unlabeled_indices)
+
+        # Create data loaders for labeled, unlabeled, and test sets
+        labeled_loader = DataLoader(labeled_dataset, batch_size=setup['labeled_batch_size'], shuffle=True)
+        unlabeled_loader = DataLoader(unlabeled_dataset, batch_size=setup['unlabeled_batch_size'], shuffle=True)
+
+        testset = torchvision.datasets.CIFAR10(
+            root='./data', train=False, download=True, transform=transform_test)
+        test_loader = DataLoader(testset, batch_size=64, shuffle=False)
+        dataset = {
+            'labeled_trainloader': labeled_loader,
+            'unlabeled_trainloader': unlabeled_loader,
+            'testloader': test_loader
+        }
+
+        return dataset
+
 
     # print_data_info(train_loader, test_loader, setup['dataset_name'])
 
