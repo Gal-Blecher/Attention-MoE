@@ -75,7 +75,7 @@ setup = {'n_epochs': 200,
          'expert_type': 'VIBNetResNet',
          'dataset_name': 'cifar10_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNetResNet_100_6',
+         'experiment_name': 'VIBNetResNet_500_6',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,
@@ -93,9 +93,9 @@ setup = {'n_epochs': 200,
          'classification_loss_coeff_net': 1.0,
          'criterion_labeled_experts': 1.0,
          'reconstruction_labeled_experts': 0,
-         'kl_labeled_experts': 0.00001,
+         'kl_labeled_experts': 0.0000001,
          'reconstruction_unlabeled_experts': 1.0,
-         'kl_unlabeled_experts': 0.000001
+         'kl_unlabeled_experts': 0.0000001
          }
 
 
