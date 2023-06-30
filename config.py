@@ -70,8 +70,8 @@ train_config = {
 }
 
 setup = {'n_epochs': 200,
-         'lr': 0.1,
-         'router_lr': 0.1,
+         'lr': 0.01,
+         'router_lr': 0.01,
          'expert_type': 'VIBNetResNet',
          'dataset_name': 'cifar10_ssl',
          'n_experts': 2,
