@@ -42,9 +42,10 @@ def moe_train_vib(model, dataset):
         batch_epoch = epoch * 599
         if setup['labeled_only'] == True:
             labeled_iter = iter(dataset['labeled_trainloader'])
+            unlabeled_iter = iter(cycle(dataset['unlabeled_trainloader']))
         else:
             labeled_iter = iter(cycle(dataset['labeled_trainloader']))
-        unlabeled_iter = iter(dataset['unlabeled_trainloader'])
+            unlabeled_iter = iter(dataset['unlabeled_trainloader'])
 
         # if epoch == 10:
         #     setup['unlabeled_only'] = False
