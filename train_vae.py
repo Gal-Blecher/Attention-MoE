@@ -50,7 +50,7 @@ def train_vae(model, data):
         print(f"  Average KL Divergence Loss: {avg_kl_loss:.4f}")
 
         # Save the model
-        torch.save(model, f'/model_vae.pkl')
+        torch.save(model, f'models/model_vae.pkl')
 
     print("\nTraining completed!")
     return model
