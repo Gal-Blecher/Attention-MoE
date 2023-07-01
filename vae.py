@@ -93,7 +93,7 @@ def train_vae():
             recon_images, recon_loss, kl_loss = vae(images)
 
             # Compute total loss
-            loss = recon_loss + kl_loss
+            loss = recon_loss + 0.0000001 * kl_loss
 
             # Backpropagation and optimization
             optimizer.zero_grad()
