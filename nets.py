@@ -8,6 +8,7 @@ from config import train_config, setup
 import torch.nn.init as init
 from torchvision import models
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 
@@ -128,12 +129,17 @@ class VIBNetResNet(nn.Module):
         classification_output = self.fc_classifier(z)
 
         # Reconstruction loss
-        recon_loss = (x_hat - x_input) ** 2
-        recon_loss = recon_loss.flatten(start_dim=1).mean(1)
+        # recon_loss = (x_hat - x_input) ** 2
+        # recon_loss = recon_loss.flatten(start_dim=1).mean(1)
+        batch_size = x_input.size(0)
+        loss = F.mse_loss(x_input, x_hat)
+        recon_loss = loss / batch_size
 
 
         # KL divergence loss
-        kl_loss = -0.5 * torch.sum(1 + logvar - mean.pow(2) - logvar.exp(), dim=1)
+        # kl_loss = -0.5 * torch.sum(1 + logvar - mean.pow(2) - logvar.exp(), dim=1)
+        kl_loss = -0.5 * torch.sum(1 + logvar - mean.pow(2) - logvar.exp())
+
 
         self.reconstruction_loss = recon_loss
         self.kl_loss = kl_loss
@@ -145,13 +151,17 @@ class VIBNetResNet(nn.Module):
     def plot_input_reconstruction(self, x, x_hat):
         fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(8, 4))
 
+        # Transpose the tensor dimensions (C, H, W) to (H, W, C) for visualization
+        x = np.transpose(x.detach().cpu().numpy(), (1, 2, 0))
+        x_hat = np.transpose(x_hat.detach().cpu().numpy(), (1, 2, 0))
+
         # Plot input image
-        axes[0].imshow(x.detach().cpu().squeeze(), cmap='gray')
+        axes[0].imshow(x)
         axes[0].set_title('Input')
         axes[0].axis('off')
 
-        # Plot reconstruction image
-        axes[1].imshow(x_hat.detach().cpu().squeeze(), cmap='gray')
+        # Plot reconstruction image without specifying cmap
+        axes[1].imshow(x_hat)
         axes[1].set_title('Reconstruction')
         axes[1].axis('off')
 

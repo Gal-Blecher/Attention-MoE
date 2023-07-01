@@ -166,6 +166,9 @@ def experts_loss(labels, att_weights, model):
 
 def unlabeled_experts_loss(att_weights, model):
     if model.n_experts == 2:
+        expert_1_loss = setup['reconstruction_unlabeled_experts'] * model.expert1.reconstruction_loss + setup['kl_unlabeled_experts'] * model.expert1.kl_loss
+        expert_2_loss = setup['reconstruction_unlabeled_experts'] * model.expert2.reconstruction_loss + setup['kl_unlabeled_experts'] * model.expert2.kl_loss
+        return expert_1_loss + expert_2_loss
         experts_loss_ = torch.stack(
             (
             setup['reconstruction_unlabeled_experts'] * model.expert1.reconstruction_loss + setup['kl_unlabeled_experts'] * model.expert1.kl_loss,
@@ -178,8 +181,6 @@ def unlabeled_experts_loss(att_weights, model):
     experts_loss_flattend = torch.flatten(experts_loss_)
     weighted_experts_loss = torch.dot(att_weights_flattened, experts_loss_flattend)
     return weighted_experts_loss / att_weights.shape[0]
-
-
 
 def kl_divergence(vector):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
