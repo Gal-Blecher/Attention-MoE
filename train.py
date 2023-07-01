@@ -89,8 +89,8 @@ def moe_train_vib(model, dataset):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
             if batch_idx % 50 == 0:
-                logger.info(f'batch_idx: {batch_idx}, balance between experts: {labeled_att_weights.sum(0).T.detach()}, loss: {round(running_loss/50, 4)}')
-                logger.info(f'labeled loss: {round(labeled_loss.item(), 4)}, unlabeled loss: {round(unlabeled_loss.item(), 4)}')
+                logger.info(f'batch_idx: {batch_idx}, balance between experts: {unlabeled_att_weights.sum(0).T.detach()}, loss: {round(running_loss/50, 4)}')
+                logger.info(f'labeled loss: {round(labeled_loss, 4)}, unlabeled loss: {round(unlabeled_loss.item(), 4)}')
                 running_loss = 0
             batch_idx += 1
             # if setup['unlabeled_only'] == False:
