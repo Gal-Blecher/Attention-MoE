@@ -106,7 +106,7 @@ def train_vae():
                       f"Reconstruction Loss: {recon_loss.item():.4f}, KL Divergence: {kl_loss.item():.4f}")
 
     # Save the trained model
-    torch.save(vae.state_dict(), 'vae_model.pth')
+    torch.save(vae, 'vae_model.pkl')
 
 
 # Example usage
