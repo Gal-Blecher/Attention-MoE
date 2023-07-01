@@ -69,13 +69,13 @@ train_config = {
     'device': device.type
 }
 
-setup = {'n_epochs': 200,
+setup = {'n_epochs': 100,
          'lr': 0.01,
          'router_lr': 0.01,
          'expert_type': 'VIBNetResNet',
          'dataset_name': 'cifar10_ssl',
          'n_experts': 2,
-         'experiment_name': 'VIBNetResNet_500_16_ulo',
+         'experiment_name': 'VIBNetResNet_500_17_ulo',
          'model_checkpoint_path': None,
          'model_eval_path': None,
          'evaluate': False,

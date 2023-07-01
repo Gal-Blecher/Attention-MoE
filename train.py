@@ -118,7 +118,7 @@ def test_and_save(model, dataset, path, epoch, logger):
     acc_test = moe_test(dataset['testloader'], model)
     model.test_acc.append(acc_test)
     logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
-    if acc_test == max(model.test_acc):
+    if acc_test == max(model.test_acc) or setup['unlabeled_only']:
         logger.info(
             '--------------------------------------------saving model--------------------------------------------')
         torch.save(model, f'{path}/model.pkl')
