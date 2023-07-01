@@ -5,6 +5,7 @@ def train_vae(model, data):
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dataloader = data['train_loader']
+    model.to(device)
 
     # Hyperparameters
     learning_rate = 1e-3
