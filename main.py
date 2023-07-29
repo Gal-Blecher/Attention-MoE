@@ -36,7 +36,7 @@ if __name__ == '__main__':
             }
             dataset = ssl_new.fit(dataset_ssl, model)
             new_dataset = {
-                'train_loader': dataset['labeled_train_loader']
+                'train_loader': dataset['labeled_train_loader'],
                 'test_loader': dataset['test_loader']
             }
             model = build.build_model()
