@@ -39,9 +39,9 @@ def split_labeled_unlabeled_data(n_labeled_samples, data_loader):
     return labeled_data_loader, unlabeled_data_loader
 
 def get_high_score_unlabeled_data(unlabeled_data_loader, model, threshold):
-    unlabeled_samples = torch.tensor([]).to(device)
-    ssl_labeled_samples = torch.tensor([]).to(device)
-    ssl_labeled_labels = torch.tensor([]).to(device)
+    unlabeled_samples = torch.tensor([])
+    ssl_labeled_samples = torch.tensor([])
+    ssl_labeled_labels = torch.tensor([])
 
     # Set the model to evaluation mode
     model.eval()
@@ -64,8 +64,8 @@ def get_high_score_unlabeled_data(unlabeled_data_loader, model, threshold):
 
             # Append the high-score samples and their labels to the filtered lists
             if high_score_indices.numel() > 0:
-                high_score_samples = batch_samples[high_score_indices]
-                high_score_labels = predicted_labels[high_score_indices]
+                high_score_samples = batch_samples[high_score_indices].to('cpu')
+                high_score_labels = predicted_labels[high_score_indices].to('cpu')
                 if high_score_indices.shape[0] == 1:
                     high_score_samples = high_score_samples.unsqueeze(0)
                 ssl_labeled_samples = torch.cat((ssl_labeled_samples, high_score_samples), dim=0)
@@ -73,7 +73,7 @@ def get_high_score_unlabeled_data(unlabeled_data_loader, model, threshold):
 
             # Append the remaining low-score samples and their labels back to the unlabeled lists
             if low_score_indices.numel() > 0:
-                low_score_samples = batch_samples[low_score_indices]
+                low_score_samples = batch_samples[low_score_indices].to('cpu')
                 if low_score_indices.shape[0] == 1:
                     low_score_samples = low_score_samples.unsqueez(0)
                 unlabeled_samples = torch.cat((unlabeled_samples, low_score_samples), dim=0)
