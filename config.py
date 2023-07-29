@@ -71,8 +71,8 @@ setup = {'n_epochs': 300,
          'model_eval_path': None,
          'evaluate': False,
          'ssl': 1000,
-         'ssl_th': 0.7,
-         'label_every': 5,
+         'ssl_th': 0.5,
+         'label_every': 3,
          'label_all': False,
          'labeled_only': False
          }

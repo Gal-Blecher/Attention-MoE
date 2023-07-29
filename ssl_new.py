@@ -112,7 +112,8 @@ def add_unlabeled_samples_labels_to_labeled_data_loader(ssl_labeled_samples, ssl
 
 def propagate_labels(labeled_data_loader, unlabeled_data_loader, model, th):
     ssl_labeled_samples, ssl_labeled_labels, unlabeled_data_loader = get_high_score_unlabeled_data(unlabeled_data_loader, model, th)
-    labeled_data_loader = add_unlabeled_samples_labels_to_labeled_data_loader(ssl_labeled_samples, ssl_labeled_labels, labeled_data_loader)
+    if ssl_labeled_labels.shape[0] > 0:
+        labeled_data_loader = add_unlabeled_samples_labels_to_labeled_data_loader(ssl_labeled_samples, ssl_labeled_labels, labeled_data_loader)
     return labeled_data_loader, unlabeled_data_loader
 
 
@@ -126,5 +127,5 @@ def fit(dataset, model):
         labeled_data_loader, unlabeled_data_loader = propagate_labels(dataset['labeled_train_loader'], dataset['unlabeled_train_loader'], model, setup['ssl_th'])
         dataset['labeled_train_loader'] = labeled_data_loader
         dataset['unlabeled_train_loader'] = unlabeled_data_loader
-        print(f'labeled dataloader length: {len(labeled_data_loader)}, ublabeled dataloader length: {len(unlabeled_data_loader)}')
+        print(f'labeled dataloader length: {len(labeled_data_loader.dataset)}, ublabeled dataloader length: {len(unlabeled_data_loader.dataset)}')
     return dataset
