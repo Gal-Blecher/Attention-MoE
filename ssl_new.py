@@ -68,6 +68,7 @@ def get_high_score_unlabeled_data(unlabeled_data_loader, model, threshold):
                 high_score_labels = predicted_labels[high_score_indices].to('cpu')
                 if high_score_samples.shape[0] == 1:
                     high_score_samples = high_score_samples.unsqueeze(0)
+                    print('1111111111111111')
                 ssl_labeled_samples = torch.cat((ssl_labeled_samples, high_score_samples), dim=0)
                 print(f'high_score_labels: {high_score_labels}')
                 ssl_labeled_labels = torch.cat((ssl_labeled_labels, high_score_labels), dim=0)
