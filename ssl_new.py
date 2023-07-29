@@ -120,7 +120,7 @@ def propagate_labels(labeled_data_loader, unlabeled_data_loader, model, th):
 
 
 def fit(dataset, model):
-    while len(labeled_data_loader.dataset) < 49_000:
+    while len(dataset['labeled_train_loader'].dataset) < 49_000:
         model.train()
         train.moe_train_ssl(model, dataset)
         labeled_data_loader, unlabeled_data_loader = propagate_labels(dataset['labeled_train_loader'], dataset['unlabeled_train_loader'], model, setup['ssl_th'])
