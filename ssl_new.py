@@ -69,6 +69,7 @@ def get_high_score_unlabeled_data(unlabeled_data_loader, model, threshold):
                 if high_score_samples.shape[0] == 1:
                     high_score_samples = high_score_samples.unsqueeze(0)
                 ssl_labeled_samples = torch.cat((ssl_labeled_samples, high_score_samples), dim=0)
+                print(f'high_score_labels: {high_score_labels}')
                 ssl_labeled_labels = torch.cat((ssl_labeled_labels, high_score_labels), dim=0)
 
             # Append the remaining low-score samples and their labels back to the unlabeled lists
