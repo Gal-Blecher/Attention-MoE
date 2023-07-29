@@ -1,3 +1,4 @@
+import ssl_new
 from config import setup
 import torch
 import datasets
@@ -6,7 +7,6 @@ import train
 import plots
 import os
 import self_supervised
-# from torchsummary import summary
 
 torch.manual_seed(42)
 
@@ -25,9 +25,22 @@ if __name__ == '__main__':
         model = build.build_model()
     if setup['n_experts'] == 1:
         model = model.expert1
-        # summary(model, (3, 32, 32))
         train.train_expert(model, dataset)
     else:
         if setup['ssl']:
-            model, dataset = self_supervised.fit(dataset, model)
-        train.moe_train_vib(model, dataset)
+            labeled_data_loader, unlabeled_data_loader = ssl_new.split_labeled_unlabeled_data(setup['ssl'], dataset['train_loader'])
+            dataset_ssl = {
+                'labeled_train_loader': labeled_data_loader,
+                'unlabeled_train_loader': unlabeled_data_loader,
+                'test_loader': dataset['test_loader']
+            }
+            dataset = ssl_new.fit(dataset_ssl, model)
+            new_dataset = {
+                'train_loader': dataset['labeled_train_loader']
+                'test_loader': dataset['test_loader']
+            }
+            model = build.build_model()
+            train.moe_train(model, new_dataset)
+
+
+

@@ -7,6 +7,8 @@ import os
 from PIL import Image, TarIO
 import pickle
 import tarfile
+from torch.utils.data import Dataset, DataLoader
+import torchvision.transforms as transforms
 
 def save_vectors(experiment_name, train_acc, test_acc):
     torch.save(train_acc, f'./plots_data/train_acc{experiment_name}.pkl')
@@ -29,4 +31,23 @@ def get_logger(name):
 
     return logger
 
+class CustomDataset(Dataset):
+    def __init__(self, samples, labels, transform=None):
+        self.samples = samples
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        sample = self.samples[idx]
+        label = self.labels[idx]
+
+        if self.transform:
+            # Convert ndarray to PIL Image and then apply the transform
+            sample = transforms.ToPILImage()(sample)
+            sample = self.transform(sample)
+
+        return sample, label
 

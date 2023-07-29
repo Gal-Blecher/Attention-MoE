@@ -155,7 +155,7 @@ def moe_train(model, dataset):
     with open(f'{path}/acc_test.pkl', 'wb') as f:
         pickle.dump(model.test_acc, f)
 
-def moe_train_vib(model, dataset):
+def moe_train_ssl(model, dataset):
     logger = get_logger(setup['experiment_name'])
     for key, value in setup.items():
         to_log = str(key) + ': ' + str(value)
@@ -177,27 +177,18 @@ def moe_train_vib(model, dataset):
                           momentum=0.9, weight_decay=5e-4)
     scheduler_router = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer_router, T_max=setup['n_epochs'])
     model.test_acc = []
-    for epoch in range(setup['n_epochs']):
+    for epoch in range(setup['label_every']):
         model.train()
         running_loss = 0
         correct = 0
         total = 0
-        if (epoch % 2 == 0) or (setup['labeled_only'] == True):
-            loader = dataset['labeled_trainloader']
-        else:
-            loader = dataset['unlabeled_trainloader']
-        for batch_idx, (inputs, targets) in enumerate(loader):
+        for batch_idx, (inputs, targets) in enumerate(dataset['labeled_train_loader']):
             inputs, targets = inputs.to(device), targets.to(device)
             optimizer_experts.zero_grad()
             optimizer_router.zero_grad()
             outputs, att_weights = model(inputs)
-            if (epoch % 2 == 0) or (setup['label_all']) or (setup['labeled_only'] == True):
-                net_loss = criterion(outputs, targets)
-                experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
-            else:
-                net_loss = 0
-                experts_loss_ = 0.0001 * experts_loss_reconstraction_only(targets, att_weights.squeeze(2), model)
-
+            net_loss = criterion(outputs, targets)
+            experts_loss_ = experts_loss(targets, att_weights.squeeze(2), model)
             kl_loss = kl_divergence(att_weights.sum(0))
             loss = net_loss + setup['experts_coeff'] * experts_loss_ + setup['kl_coeff'] * kl_loss
 
@@ -209,34 +200,35 @@ def moe_train_vib(model, dataset):
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
-            if batch_idx % 50 == 0:
+            if batch_idx % 1 == 0:
                 logger.info(f'batch_idx: {batch_idx}, experts ratio: {att_weights.sum(0).data.T}')
+                print(f'batch_idx: {batch_idx}, experts ratio: {att_weights.sum(0).data.T}')
         acc_train = round((correct/total)*100, 2)
         logger.info(f'epoch: {epoch}, train accuracy: {acc_train}')
 
         scheduler_experts.step()
         scheduler_router.step()
-        if epoch % 1 == 0 or epoch > 150:
-            acc_test = moe_test(dataset['test_loader'], model)
-            model.test_acc.append(acc_test)
-            logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
-            with open(f"{path}/current_epoch.txt", "w") as file:
-                file.write(f'{epoch}')
-            if acc_test == max(model.test_acc):
-                logger.info('--------------------------------------------saving model--------------------------------------------')
-                torch.save(model, f'{path}/model.pkl')
-                with open(f"{path}/config.txt", "w") as file:
-                    file.write(json.dumps(setup))
-                    file.write(json.dumps(train_config))
-                with open(f"{path}/accuracy.txt", "w") as file:
-                    file.write(f'{epoch}: {acc_test}')
-            if early_stop(model.test_acc):
-                with open(f'{path}/acc_test.pkl', 'wb') as f:
-                    pickle.dump(model.test_acc, f)
-                return
+        # if epoch % 100 == 0 or epoch > 150:
+        #     acc_test = moe_test(dataset['test_loader'], model)
+        #     model.test_acc.append(acc_test)
+        #     logger.info(f'epoch: {epoch}, test accuracy: {round(acc_test, 2)}')
+        #     with open(f"{path}/current_epoch.txt", "w") as file:
+        #         file.write(f'{epoch}')
+        #     if acc_test == max(model.test_acc):
+        #         logger.info('--------------------------------------------saving model--------------------------------------------')
+        #         torch.save(model, f'{path}/model.pkl')
+        #         with open(f"{path}/config.txt", "w") as file:
+        #             file.write(json.dumps(setup))
+        #             file.write(json.dumps(train_config))
+        #         with open(f"{path}/accuracy.txt", "w") as file:
+        #             file.write(f'{epoch}: {acc_test}')
+        #     if early_stop(model.test_acc):
+        #         with open(f'{path}/acc_test.pkl', 'wb') as f:
+        #             pickle.dump(model.test_acc, f)
+        #         return
 
-    with open(f'{path}/acc_test.pkl', 'wb') as f:
-        pickle.dump(model.test_acc, f)
+    # with open(f'{path}/acc_test.pkl', 'wb') as f:
+    #     pickle.dump(model.test_acc, f)
 
 def moe_test(test_loader, model):
     device = train_config['device']
@@ -260,8 +252,8 @@ def experts_loss(labels, att_weights, model):
     if model.n_experts == 2:
         experts_loss_ = torch.stack(
             (
-            criterion(model.expert1.out, labels) + 0.01 * model.expert1.loss_reconstruction,
-            criterion(model.expert2.out, labels) + 0.01 * model.expert1.loss_reconstruction
+            criterion(model.expert1.out, labels),
+            criterion(model.expert2.out, labels)
             )
             , dim=1)
 

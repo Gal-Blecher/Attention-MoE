@@ -6,6 +6,7 @@ from config import setup
 import train
 from torch.utils.data import TensorDataset
 import numpy as np
+import torchvision.transforms as transforms
 
 def initial_split(train_loader):
     labeled_indexes = random.sample(range(train_loader.dataset.data.shape[0]), setup['ssl'])
@@ -52,7 +53,14 @@ def calculate_accuracy(list1, list2):
     accuracy = count / total
     print(accuracy)
 
-def fit(dataset, model):
+def prepare_datasets(dataset, model):
+    transform_train = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+    ])
+
     labeled_indexes, unlabeled_indexes = initial_split(train_loader=dataset['train_loader'])
     orig_labels = dataset['train_loader'].dataset.targets
 
@@ -86,20 +94,6 @@ def fit(dataset, model):
     unlabeled_dataset = torch.utils.data.TensorDataset(images_tensor, labels_tensor)
     unlabeled_trainloader = torch.utils.data.DataLoader(unlabeled_dataset, batch_size=64, shuffle=True)
 
-    # train ssl
-    # while True:
-    #     unlabeled_samples = unlabeled_trainloader.dataset.tensors[0].shape[0]
-    #     print(f'unlabeled samples: {unlabeled_samples}')
-    #     dataset_ssl = {
-    #         'train_loader': labeled_trainloader,
-    #         'test_loader': dataset['test_loader']
-    #     }
-    #     for i in range(setup['label_every']):
-    #         train.moe_ssl_train(model, dataset_ssl)
-    #     labeled_trainloader, unlabeled_trainloader = label_samples(model, unlabeled_trainloader, labeled_trainloader, th=setup['ssl_th'])
-    #     if unlabeled_trainloader == None:
-    #         break
-
     dataset = {'labeled_trainloader': labeled_trainloader,
                'unlabeled_trainloader': unlabeled_trainloader,
                'test_loader': dataset['test_loader']}
@@ -108,3 +102,6 @@ def fit(dataset, model):
     # print(f'GT labels: {orig_labels[:100]}')
     # calculate_accuracy(labeled_trainloader.dataset.targets, orig_labels)
     return model, dataset
+
+def fit(model, dataset):
+    print('here')
