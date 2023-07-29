@@ -39,9 +39,9 @@ def split_labeled_unlabeled_data(n_labeled_samples, data_loader):
     return labeled_data_loader, unlabeled_data_loader
 
 def get_high_score_unlabeled_data(unlabeled_data_loader, model, threshold):
-    unlabeled_samples = torch.tensor([])
-    ssl_labeled_samples = torch.tensor([])
-    ssl_labeled_labels = torch.tensor([])
+    unlabeled_samples = torch.tensor([]).to(device)
+    ssl_labeled_samples = torch.tensor([]).to(device)
+    ssl_labeled_labels = torch.tensor([]).to(device)
 
     # Set the model to evaluation mode
     model.eval()
